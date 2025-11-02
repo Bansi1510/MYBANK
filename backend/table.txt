@@ -1,0 +1,79 @@
+CREATE TABLE users (
+    id SERIAL PRIMARY KEY,
+    full_name VARCHAR(100) NOT NULL,
+    email VARCHAR(120) UNIQUE NOT NULL,
+    phone VARCHAR(20) UNIQUE,
+    password_hash TEXT NOT NULL,
+    user_type VARCHAR(20) DEFAULT 'customer' CHECK (user_type IN ('customer', 'admin', 'staff')),
+    kyc_verified BOOLEAN DEFAULT FALSE,
+    created_at TIMESTAMP DEFAULT CURRENT_TIMESTAMP,
+    updated_at TIMESTAMP DEFAULT CURRENT_TIMESTAMP
+);
+CREATE TABLE accounts (
+    id SERIAL PRIMARY KEY,
+    user_id INT NOT NULL REFERENCES users(id) ON DELETE CASCADE,
+    account_number VARCHAR(20) UNIQUE NOT NULL,
+    account_type VARCHAR(20) DEFAULT 'savings' CHECK (account_type IN ('savings', 'checking', 'virtual')),
+    currency VARCHAR(10) DEFAULT 'INR',
+    balance NUMERIC(15,2) DEFAULT 0.00,
+    status VARCHAR(15) DEFAULT 'active' CHECK (status IN ('active', 'frozen', 'closed')),
+    created_at TIMESTAMP DEFAULT CURRENT_TIMESTAMP
+);
+CREATE TABLE transactions (
+    id SERIAL PRIMARY KEY,
+    user_id INT NOT NULL REFERENCES users(id) ON DELETE CASCADE,
+    account_id INT NOT NULL REFERENCES accounts(id) ON DELETE CASCADE,
+    type VARCHAR(20) CHECK (type IN ('deposit', 'withdrawal', 'transfer_in', 'transfer_out')),
+    amount NUMERIC(15,2) NOT NULL,
+    status VARCHAR(20) DEFAULT 'success' CHECK (status IN ('success', 'pending', 'failed')),
+    reference_no VARCHAR(50) UNIQUE,
+    description TEXT,
+    receiver_account VARCHAR(20),
+    created_at TIMESTAMP DEFAULT CURRENT_TIMESTAMP
+);
+CREATE TABLE cards (
+    id SERIAL PRIMARY KEY,
+    account_id INT NOT NULL REFERENCES accounts(id) ON DELETE CASCADE,
+    card_number VARCHAR(16) UNIQUE NOT NULL,
+    card_type VARCHAR(20) DEFAULT 'virtual' CHECK (card_type IN ('virtual', 'debit', 'credit')),
+    expiry_date DATE NOT NULL,
+    cvv VARCHAR(4) NOT NULL,
+    status VARCHAR(20) DEFAULT 'active' CHECK (status IN ('active', 'blocked', 'expired')),
+    created_at TIMESTAMP DEFAULT CURRENT_TIMESTAMP
+);
+CREATE TABLE notifications (
+    id SERIAL PRIMARY KEY,
+    user_id INT NOT NULL REFERENCES users(id) ON DELETE CASCADE,
+    title VARCHAR(100) NOT NULL,
+    message TEXT NOT NULL,
+    is_read BOOLEAN DEFAULT FALSE,
+    created_at TIMESTAMP DEFAULT CURRENT_TIMESTAMP
+);
+CREATE TABLE loans (
+    id SERIAL PRIMARY KEY,
+    user_id INT NOT NULL REFERENCES users(id) ON DELETE CASCADE,
+    account_id INT NOT NULL REFERENCES accounts(id) ON DELETE CASCADE,
+    loan_type VARCHAR(50),
+    principal NUMERIC(15,2) NOT NULL,
+    interest_rate NUMERIC(5,2) DEFAULT 8.5,
+    duration_months INT,
+    status VARCHAR(20) DEFAULT 'active' CHECK (status IN ('active', 'completed', 'defaulted')),
+    applied_on TIMESTAMP DEFAULT CURRENT_TIMESTAMP,
+    next_due_date DATE
+);
+CREATE TABLE ai_insights (
+    id SERIAL PRIMARY KEY,
+    user_id INT NOT NULL REFERENCES users(id) ON DELETE CASCADE,
+    month_year VARCHAR(10),
+    total_spent NUMERIC(15,2),
+    predicted_spending NUMERIC(15,2),
+    category JSONB,
+    created_at TIMESTAMP DEFAULT CURRENT_TIMESTAMP
+);
+CREATE TABLE admin_logs (
+    id SERIAL PRIMARY KEY,
+    admin_id INT NOT NULL REFERENCES users(id) ON DELETE CASCADE,
+    action VARCHAR(255),
+    details TEXT,
+    created_at TIMESTAMP DEFAULT CURRENT_TIMESTAMP
+);

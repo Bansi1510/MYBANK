@@ -5,7 +5,10 @@
   "main": "index.js",
   "scripts": {
     "test": "echo \"Error: no test specified\" && exit 1",
-    "start": "cd backend && npm start"
+    "server": "cd backend && npm start",
+    "client": "cd frontend && npm run dev",
+    "admin": "cd admin && npm run dev",
+    "start": "concurrently \"npm run server\" \"npm run client\" \"npm run admin\""
   },
   "repository": {
     "type": "git",
@@ -18,5 +21,8 @@
   "bugs": {
     "url": "https://github.com/Bansi1510/MYBANK/issues"
   },
-  "homepage": "https://github.com/Bansi1510/MYBANK#readme"
+  "homepage": "https://github.com/Bansi1510/MYBANK#readme",
+  "dependencies": {
+    "concurrently": "^9.2.1"
+  }
 }
