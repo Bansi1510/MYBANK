@@ -1,79 +1,270 @@
+-- 1) staff_admins: bank employees (staff, manager, admin)
+CREATE TABLE staff_admins (
+  id SERIAL PRIMARY KEY,
+  name VARCHAR(100) NOT NULL,
+  email VARCHAR(120) UNIQUE NOT NULL,
+  mobile_number VARCHAR(15),
+  password VARCHAR(255) NOT NULL,
+  role VARCHAR(20) NOT NULL CHECK (role IN ('staff','manager','admin')),
+  status VARCHAR(20) NOT NULL DEFAULT 'active' CHECK (status IN ('active','inactive','suspended')),
+  created_at TIMESTAMP DEFAULT NOW()
+);
+
+-- 2) account_requests: created by staff, pending manager decision
+CREATE TABLE account_requests (
+  id SERIAL PRIMARY KEY,
+  name VARCHAR(100) NOT NULL,
+  email VARCHAR(120),
+  mobile_number VARCHAR(15),
+  address TEXT NOT NULL,
+  aadhar_number VARCHAR(12) UNIQUE NOT NULL,
+  pan_number VARCHAR(10),
+  requested_account_type VARCHAR(20) NOT NULL CHECK (requested_account_type IN ('savings','current','fixed','salary')),
+  initial_deposit NUMERIC(15,2) DEFAULT 0.00,
+  kyc_document_type VARCHAR(10) CHECK (kyc_document_type IN ('aadhar','pan')),
+  kyc_document_url TEXT,
+  created_by INT REFERENCES staff_admins(id) ON DELETE SET NULL,
+  status VARCHAR(20) NOT NULL DEFAULT 'pending' CHECK (status IN ('pending','approved','rejected')),
+  created_at TIMESTAMP DEFAULT NOW()
+);
+
+-- 3) account_request_history: store all decided requests for audit
+CREATE TABLE account_request_history (
+  id SERIAL PRIMARY KEY,
+  request_id INT NOT NULL REFERENCES account_requests(id) ON DELETE SET NULL,
+  name VARCHAR(100),
+  email VARCHAR(120),
+  mobile_number VARCHAR(15),
+  address TEXT,
+  aadhar_number VARCHAR(12),
+  pan_number VARCHAR(10),
+  requested_account_type VARCHAR(20),
+  initial_deposit NUMERIC(15,2),
+  kyc_document_type VARCHAR(10),
+  kyc_document_url TEXT,
+  final_status VARCHAR(20) NOT NULL CHECK (final_status IN ('approved','rejected')),
+  decided_by INT REFERENCES staff_admins(id) ON DELETE SET NULL,
+  decided_at TIMESTAMP DEFAULT NOW()
+);
+
+-- 4) users: customers created after approval. KYC reference fields included.
 CREATE TABLE users (
-    id SERIAL PRIMARY KEY,
-    full_name VARCHAR(100) NOT NULL,
-    email VARCHAR(120) UNIQUE NOT NULL,
-    phone VARCHAR(20) UNIQUE,
-    password_hash TEXT NOT NULL,
-    user_type VARCHAR(20) DEFAULT 'customer' CHECK (user_type IN ('customer', 'admin', 'staff')),
-    kyc_verified BOOLEAN DEFAULT FALSE,
-    created_at TIMESTAMP DEFAULT CURRENT_TIMESTAMP,
-    updated_at TIMESTAMP DEFAULT CURRENT_TIMESTAMP
+  id SERIAL PRIMARY KEY,
+  name VARCHAR(100) NOT NULL,
+  email VARCHAR(120),
+  mobile_number VARCHAR(15),
+  password VARCHAR(255) NOT NULL, -- hashed
+  address TEXT NOT NULL,
+
+  -- KYC fields (Aadhaar or PAN). Aadhaar uniqueness enforced to prevent duplicate accounts.
+  aadhar_number VARCHAR(12) UNIQUE,
+  pan_number VARCHAR(10),
+
+  kyc_verified BOOLEAN DEFAULT FALSE,
+  kyc_method VARCHAR(10) CHECK (kyc_method IN ('aadhar','pan')),
+  kyc_document_url TEXT,
+
+  created_by INT REFERENCES staff_admins(id) ON DELETE SET NULL,
+  created_at TIMESTAMP DEFAULT NOW()
 );
+
+-- 5) accounts: actual bank accounts (note account_number is UNIQUE and referenced elsewhere)
 CREATE TABLE accounts (
-    id SERIAL PRIMARY KEY,
-    user_id INT NOT NULL REFERENCES users(id) ON DELETE CASCADE,
-    account_number VARCHAR(20) UNIQUE NOT NULL,
-    account_type VARCHAR(20) DEFAULT 'savings' CHECK (account_type IN ('savings', 'checking', 'virtual')),
-    currency VARCHAR(10) DEFAULT 'INR',
-    balance NUMERIC(15,2) DEFAULT 0.00,
-    status VARCHAR(15) DEFAULT 'active' CHECK (status IN ('active', 'frozen', 'closed')),
-    created_at TIMESTAMP DEFAULT CURRENT_TIMESTAMP
+  id SERIAL PRIMARY KEY,
+  user_id INT NOT NULL REFERENCES users(id) ON DELETE CASCADE,
+  account_number VARCHAR(20) NOT NULL UNIQUE,
+  account_type VARCHAR(20) NOT NULL CHECK (account_type IN ('savings','current','fixed','salary')),
+  balance DECIMAL(18,2) DEFAULT 0.00,
+  status VARCHAR(20) NOT NULL DEFAULT 'active' CHECK (status IN ('active','inactive','closed','suspended')),
+  created_by INT REFERENCES staff_admins(id) ON DELETE SET NULL,
+  created_at TIMESTAMP DEFAULT NOW()
 );
+
+-- 6) transactions: all banking transactions (references accounts.account_number)
 CREATE TABLE transactions (
-    id SERIAL PRIMARY KEY,
-    user_id INT NOT NULL REFERENCES users(id) ON DELETE CASCADE,
-    account_id INT NOT NULL REFERENCES accounts(id) ON DELETE CASCADE,
-    type VARCHAR(20) CHECK (type IN ('deposit', 'withdrawal', 'transfer_in', 'transfer_out')),
-    amount NUMERIC(15,2) NOT NULL,
-    status VARCHAR(20) DEFAULT 'success' CHECK (status IN ('success', 'pending', 'failed')),
-    reference_no VARCHAR(50) UNIQUE,
-    description TEXT,
-    receiver_account VARCHAR(20),
-    created_at TIMESTAMP DEFAULT CURRENT_TIMESTAMP
+  id BIGSERIAL PRIMARY KEY,
+  account_number VARCHAR(20) REFERENCES accounts(account_number) ON DELETE CASCADE,
+  transaction_type VARCHAR(30) NOT NULL CHECK (transaction_type IN ('deposit','withdraw','transfer','upi','neft','rtgs','card','loan_payment')),
+  amount DECIMAL(18,2) NOT NULL CHECK (amount > 0),
+  currency VARCHAR(10) DEFAULT 'INR',
+  from_account VARCHAR(20),
+  to_account VARCHAR(20),
+  description TEXT,
+  status VARCHAR(20) NOT NULL DEFAULT 'success' CHECK (status IN ('success','failed','pending')),
+  initiated_by INT REFERENCES staff_admins(id) ON DELETE SET NULL, -- staff operation if applicable
+  created_at TIMESTAMP DEFAULT NOW()
 );
+
+-- 7) account_statements: periodic snapshots / statement entries (useful for export)
+CREATE TABLE account_statements (
+  id SERIAL PRIMARY KEY,
+  account_number VARCHAR(20) REFERENCES accounts(account_number) ON DELETE CASCADE,
+  statement_period_start DATE NOT NULL,
+  statement_period_end DATE NOT NULL,
+  opening_balance DECIMAL(18,2) NOT NULL,
+  closing_balance DECIMAL(18,2) NOT NULL,
+  generated_at TIMESTAMP DEFAULT NOW(),
+  statement_url TEXT -- link to statement PDF if generated
+);
+
+-- 8) transaction_limits: per-account or per-user transaction limits for security/compliance
+CREATE TABLE transaction_limits (
+  id SERIAL PRIMARY KEY,
+  account_number VARCHAR(20) REFERENCES accounts(account_number) ON DELETE CASCADE,
+  daily_limit_amount DECIMAL(18,2) DEFAULT 100000.00,
+  monthly_limit_amount DECIMAL(18,2) DEFAULT 2000000.00,
+  per_transaction_limit DECIMAL(18,2) DEFAULT 100000.00,
+  updated_at TIMESTAMP DEFAULT NOW()
+);
+
+-- 9) beneficiaries: saved payees (user-managed; staff can add on behalf)
+CREATE TABLE beneficiaries (
+  id SERIAL PRIMARY KEY,
+  user_id INT REFERENCES users(id) ON DELETE CASCADE,
+  beneficiary_name VARCHAR(150) NOT NULL,
+  beneficiary_account_number VARCHAR(20) NOT NULL,
+  beneficiary_ifsc VARCHAR(15),
+  beneficiary_bank VARCHAR(150),
+  created_at TIMESTAMP DEFAULT NOW(),
+  UNIQUE(user_id, beneficiary_account_number)
+);
+
+-- 10) cards: debit/credit cards tied to accounts
 CREATE TABLE cards (
-    id SERIAL PRIMARY KEY,
-    account_id INT NOT NULL REFERENCES accounts(id) ON DELETE CASCADE,
-    card_number VARCHAR(16) UNIQUE NOT NULL,
-    card_type VARCHAR(20) DEFAULT 'virtual' CHECK (card_type IN ('virtual', 'debit', 'credit')),
-    expiry_date DATE NOT NULL,
-    cvv VARCHAR(4) NOT NULL,
-    status VARCHAR(20) DEFAULT 'active' CHECK (status IN ('active', 'blocked', 'expired')),
-    created_at TIMESTAMP DEFAULT CURRENT_TIMESTAMP
+  id SERIAL PRIMARY KEY,
+  account_number VARCHAR(20) REFERENCES accounts(account_number) ON DELETE CASCADE,
+  card_number VARCHAR(16) UNIQUE NOT NULL,
+  card_type VARCHAR(20) NOT NULL CHECK (card_type IN ('debit','credit')),
+  card_brand VARCHAR(20), -- VISA/MASTERCARD/RUPAY
+  expiry_date DATE NOT NULL,
+  last4 VARCHAR(4) NOT NULL,
+  cvv_hash VARCHAR(255), -- store hashed CVV if absolutely needed (prefer not to store raw)
+  status VARCHAR(20) DEFAULT 'active' CHECK (status IN ('active','blocked','cancelled','expired')),
+  issued_at TIMESTAMP DEFAULT NOW()
 );
-CREATE TABLE notifications (
-    id SERIAL PRIMARY KEY,
-    user_id INT NOT NULL REFERENCES users(id) ON DELETE CASCADE,
-    title VARCHAR(100) NOT NULL,
-    message TEXT NOT NULL,
-    is_read BOOLEAN DEFAULT FALSE,
-    created_at TIMESTAMP DEFAULT CURRENT_TIMESTAMP
+
+-- 11) card_transactions: separate card-specific transaction details
+CREATE TABLE card_transactions (
+  id BIGSERIAL PRIMARY KEY,
+  card_id INT REFERENCES cards(id) ON DELETE SET NULL,
+  account_number VARCHAR(20) REFERENCES accounts(account_number),
+  merchant_name TEXT,
+  merchant_category_code VARCHAR(10),
+  amount DECIMAL(18,2) NOT NULL,
+  currency VARCHAR(10) DEFAULT 'INR',
+  transaction_time TIMESTAMP DEFAULT NOW(),
+  status VARCHAR(20) DEFAULT 'success' CHECK (status IN ('success','failed','pending'))
 );
+
+-- 12) loans: loan applications and active loans
 CREATE TABLE loans (
-    id SERIAL PRIMARY KEY,
-    user_id INT NOT NULL REFERENCES users(id) ON DELETE CASCADE,
-    account_id INT NOT NULL REFERENCES accounts(id) ON DELETE CASCADE,
-    loan_type VARCHAR(50),
-    principal NUMERIC(15,2) NOT NULL,
-    interest_rate NUMERIC(5,2) DEFAULT 8.5,
-    duration_months INT,
-    status VARCHAR(20) DEFAULT 'active' CHECK (status IN ('active', 'completed', 'defaulted')),
-    applied_on TIMESTAMP DEFAULT CURRENT_TIMESTAMP,
-    next_due_date DATE
+  id SERIAL PRIMARY KEY,
+  user_id INT REFERENCES users(id) ON DELETE CASCADE,
+  account_number VARCHAR(20) REFERENCES accounts(account_number),
+  loan_type VARCHAR(50) NOT NULL CHECK (loan_type IN ('home','personal','education','car','business')),
+  principal DECIMAL(18,2) NOT NULL,
+  interest_rate DECIMAL(5,2) NOT NULL, -- e.g., 8.50
+  tenure_months INT NOT NULL,
+  status VARCHAR(20) DEFAULT 'pending' CHECK (status IN ('pending','approved','rejected','closed')),
+  approved_by INT REFERENCES staff_admins(id),
+  approved_at TIMESTAMP,
+  created_at TIMESTAMP DEFAULT NOW()
 );
+
+-- 13) loan_payments: EMI / payment records
+CREATE TABLE loan_payments (
+  id BIGSERIAL PRIMARY KEY,
+  loan_id INT REFERENCES loans(id) ON DELETE CASCADE,
+  amount DECIMAL(18,2) NOT NULL,
+  principal_component DECIMAL(18,2),
+  interest_component DECIMAL(18,2),
+  remaining_balance DECIMAL(18,2),
+  payment_date TIMESTAMP DEFAULT NOW(),
+  payment_method VARCHAR(20) CHECK (payment_method IN ('account_debit','card','upi','neft','rtgs'))
+);
+
+-- 14) notifications: system & transaction notifications
+CREATE TABLE notifications (
+  id SERIAL PRIMARY KEY,
+  user_id INT REFERENCES users(id) ON DELETE CASCADE,
+  title VARCHAR(150) NOT NULL,
+  body TEXT NOT NULL,
+  channel VARCHAR(20) DEFAULT 'in_app' CHECK (channel IN ('in_app','email','sms','push')),
+  is_read BOOLEAN DEFAULT FALSE,
+  created_at TIMESTAMP DEFAULT NOW()
+);
+
+-- 15) support_tickets: user support & dispute system
+CREATE TABLE support_tickets (
+  id SERIAL PRIMARY KEY,
+  user_id INT REFERENCES users(id) ON DELETE CASCADE,
+  subject VARCHAR(150) NOT NULL,
+  message TEXT NOT NULL,
+  assigned_to INT REFERENCES staff_admins(id),
+  status VARCHAR(20) DEFAULT 'open' CHECK (status IN ('open','in_progress','resolved','closed')),
+  created_at TIMESTAMP DEFAULT NOW(),
+  updated_at TIMESTAMP
+);
+
+-- 16) audit_logs: staff actions, critical operations
+CREATE TABLE audit_logs (
+  id BIGSERIAL PRIMARY KEY,
+  action_by INT, -- can be staff_admins.id or users.id depending on role
+  role VARCHAR(20) CHECK (role IN ('user','staff','manager','admin')),
+  action TEXT NOT NULL,
+  details JSONB,
+  created_at TIMESTAMP DEFAULT NOW()
+);
+
+-- 17) login_logs: authentication attempts / sessions (for security & investigations)
+CREATE TABLE login_logs (
+  id BIGSERIAL PRIMARY KEY,
+  user_type VARCHAR(20) CHECK (user_type IN ('user','staff')) NOT NULL,
+  user_id INT, -- references users.id or staff_admins.id depending on user_type; keep as int for simplicity
+  success BOOLEAN NOT NULL,
+  ip_address VARCHAR(50),
+  user_agent TEXT,
+  created_at TIMESTAMP DEFAULT NOW()
+);
+
+-- 18) ai_insights: AI / fraud detection / recommendations logs
 CREATE TABLE ai_insights (
-    id SERIAL PRIMARY KEY,
-    user_id INT NOT NULL REFERENCES users(id) ON DELETE CASCADE,
-    month_year VARCHAR(10),
-    total_spent NUMERIC(15,2),
-    predicted_spending NUMERIC(15,2),
-    category JSONB,
-    created_at TIMESTAMP DEFAULT CURRENT_TIMESTAMP
+  id BIGSERIAL PRIMARY KEY,
+  user_id INT REFERENCES users(id) ON DELETE CASCADE,
+  account_number VARCHAR(20) REFERENCES accounts(account_number),
+  insight_type VARCHAR(50), -- e.g., 'fraud_score','credit_score','recommendation'
+  result JSONB,
+  confidence DECIMAL(5,2),
+  created_at TIMESTAMP DEFAULT NOW()
 );
-CREATE TABLE admin_logs (
-    id SERIAL PRIMARY KEY,
-    admin_id INT NOT NULL REFERENCES users(id) ON DELETE CASCADE,
-    action VARCHAR(255),
-    details TEXT,
-    created_at TIMESTAMP DEFAULT CURRENT_TIMESTAMP
+
+-- 19) transaction_limits_override: manual overrides / temporary holds (auditability)
+CREATE TABLE transaction_limits_override (
+  id SERIAL PRIMARY KEY,
+  account_number VARCHAR(20) REFERENCES accounts(account_number) ON DELETE CASCADE,
+  override_type VARCHAR(50) CHECK (override_type IN ('temporary_hold','limit_increase','whitelist')),
+  value JSONB,
+  reason TEXT,
+  created_by INT REFERENCES staff_admins(id),
+  created_at TIMESTAMP DEFAULT NOW(),
+  expires_at TIMESTAMP
 );
+
+-- 20) recurring_transfers: scheduled recurring payments (standing instructions)
+CREATE TABLE recurring_transfers (
+  id SERIAL PRIMARY KEY,
+  account_number VARCHAR(20) REFERENCES accounts(account_number) ON DELETE CASCADE,
+  to_account VARCHAR(20) NOT NULL,
+  amount DECIMAL(18,2) NOT NULL,
+  frequency VARCHAR(20) NOT NULL CHECK (frequency IN ('daily','weekly','monthly','quarterly','yearly')),
+  next_run TIMESTAMP,
+  status VARCHAR(20) DEFAULT 'active' CHECK (status IN ('active','paused','cancelled')),
+  created_by INT REFERENCES staff_admins(id),
+  created_at TIMESTAMP DEFAULT NOW()
+);
+
+-- Useful indexes
+CREATE INDEX idx_transactions_account_number ON transactions(account_number);
+CREATE INDEX idx_transactions_created_at ON transactions(created_at);
+CREATE INDEX idx_accounts_user_id ON accounts(user_id);
+CREATE INDEX idx_loans_user_id ON loans(user_id);
