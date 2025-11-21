@@ -2,8 +2,8 @@ import sql from "../utils/db.js"
 import bcrypt from "bcryptjs";
 import jwt from "jsonwebtoken";
 import Joi from "joi";
-import crypto from "crypto";
-import sendEmail from "../utils/sendEmail.js";
+import { generateOTP, hashOTP, sendWhatsappOTP } from "../utils/otp.js";
+
 
 const generateAccessToken = (data) => {
   return jwt.sign(data, process.env.JWT_SECRET, { expiresIn: "7d" });
@@ -75,21 +75,43 @@ export const addAdmin = async (req, res) => {
 };
 
 export const loginUser = async (req, res) => {
-  const { error } = loginSchema.validate(req.body);
-  if (error) return res.status(400).json({ status: false, message: error.message });
+  try {
+    const { account_number, password } = req.body;
 
-  const { email, password } = req.body;
+    if (!account_number || !password)
+      return res.status(400).json({ status: false, message: "Missing fields" });
 
-  const user = await sql.oneOrNone("SELECT * FROM users WHERE email=$1", [email]);
-  if (!user) return res.status(404).json({ status: false, message: "User not found" });
+    // 1. Fetch account
+    const account = await sql`
+      SELECT * FROM accounts WHERE account_number = ${account_number}
+    `;
 
-  const match = await bcrypt.compare(password, user.password);
-  if (!match) return res.status(401).json({ status: false, message: "Invalid password" });
+    if (!account.length)
+      return res.status(404).json({ status: false, message: "Account not found" });
 
-  const accessToken = generateAccessToken({ id: user.id, role: "user" });
-  const refreshToken = generateRefreshToken({ id: user.id, role: "user" });
+    // 2. Fetch user
+    const user = await sql`
+      SELECT * FROM users WHERE id = ${account[0].user_id}
+    `;
 
-  return res.json({ status: true, accessToken, refreshToken });
+    if (!user.length)
+      return res.status(404).json({ status: false, message: "User not found" });
+
+    // 3. Compare password
+    const match = await bcrypt.compare(password, user[0].password);
+    if (!match)
+      return res.status(401).json({ status: false, message: "Wrong password" });
+
+    // Step 1 success → request OTP
+    return res.json({
+      status: true,
+      message: "Password correct. OTP required.",
+      mobile_number: user[0].mobile_number
+    });
+
+  } catch (err) {
+    return res.status(500).json({ status: false, error: err.message });
+  }
 };
 
 export const loginStaff = async (req, res) => {
@@ -207,67 +229,128 @@ export const loginAdmin = async (req, res) => {
 
 
 export const sendOTP = async (req, res) => {
-  const { email } = req.body;
-  if (!email) return res.status(400).json({ status: false, message: "Email required" });
-
-  const user =
-    (await sql.oneOrNone("SELECT * FROM users WHERE email=$1", [email])) ||
-    (await sql.oneOrNone("SELECT * FROM staff_admins WHERE email=$1", [email]));
-
-  if (!user) return res.status(404).json({ status: false, message: "Account not found" });
-
-  const otp = crypto.randomInt(100000, 999999).toString();
-  const hashedOtp = crypto.createHmac("sha256", process.env.OTP_SECRET).update(otp).digest("hex");
-
-  await sql.none(
-    "UPDATE users SET otp=$1 WHERE email=$2",
-    [hashedOtp, email]
-  ).catch(async () => {
-    await sql.none("UPDATE staff_admins SET otp=$1 WHERE email=$2", [hashedOtp, email]);
-  });
-
-  await sendEmail(email, "Your OTP Code", `Your OTP is: ${otp}`);
-
-  return res.json({ status: true, message: "OTP sent successfully" });
-};
-
-export const verifyOTP = async (req, res) => {
-  const { error } = otpSchema.validate(req.body);
-  if (error) return res.status(400).json({ status: false, message: error.message });
-
-  const { email, otp } = req.body;
-  const hashedOtp = crypto.createHmac("sha256", process.env.OTP_SECRET).update(otp).digest("hex");
-
-  const user =
-    (await sql.oneOrNone("SELECT id,otp FROM users WHERE email=$1", [email])) ||
-    (await sql.oneOrNone("SELECT id,otp FROM staff_admins WHERE email=$1", [email]));
-
-  if (!user) return res.status(404).json({ status: false, message: "Account not found" });
-  if (user.otp !== hashedOtp) return res.status(400).json({ status: false, message: "Invalid OTP" });
-
-  await sql.none(
-    "UPDATE users SET otp=NULL WHERE email=$1",
-    [email]
-  ).catch(async () => {
-    await sql.none("UPDATE staff_admins SET otp=NULL WHERE email=$1", [email]);
-  });
-
-  return res.json({ status: true, message: "OTP verified successfully" });
-};
-
-export const refreshToken = async (req, res) => {
-  const { token } = req.body;
-  if (!token) return res.status(401).json({ status: false, message: "Token required" });
-
   try {
-    const decoded = jwt.verify(token, process.env.JWT_REFRESH_SECRET);
-    const accessToken = generateAccessToken({ id: decoded.id, role: decoded.role });
-    return res.json({ status: true, accessToken });
-  } catch {
-    return res.status(403).json({ status: false, message: "Invalid refresh token" });
+    const { mobile_number } = req.body;
+
+    if (!mobile_number)
+      return res.status(400).json({ status: false, message: "Mobile number required" });
+
+    const user = await sql`
+      SELECT * FROM users WHERE mobile_number = ${mobile_number}
+    `;
+
+    if (!user.length)
+      return res.status(404).json({ status: false, message: "User not found" });
+
+    const otp = generateOTP();
+    const hashedOtp = hashOTP(otp);
+
+    // Save OTP in DB
+    await sql`
+      UPDATE users SET otp = ${hashedOtp}
+      WHERE mobile_number = ${mobile_number}
+    `;
+
+    // Send OTP to WhatsApp
+    await sendWhatsappOTP(mobile_number, otp);
+
+    return res.json({ status: true, message: "OTP sent to WhatsApp" });
+
+  } catch (err) {
+    return res.status(500).json({ status: false, error: err.message });
   }
 };
 
+export const verifyOTP = async (req, res) => {
+  try {
+    const { mobile_number, otp } = req.body;
+
+    if (!mobile_number || !otp)
+      return res.status(400).json({ status: false, message: "Missing fields" });
+
+    const user = await sql`
+      SELECT id, otp FROM users WHERE mobile_number = ${mobile_number}
+    `;
+
+    if (!user.length)
+      return res.status(404).json({ status: false, message: "User not found" });
+
+    const isValid = bcrypt.compareSync(otp, user[0].otp); // ✅ compare entered OTP with hashed OTP
+    if (!isValid)
+      return res.status(400).json({ status: false, message: "Invalid OTP" });
+
+    // Clear OTP after success
+    await sql`
+      UPDATE users SET otp = NULL WHERE mobile_number = ${mobile_number}
+    `;
+
+    const accessToken = generateAccessToken({ id: user[0].id, role: "user" });
+    const refreshToken = generateRefreshToken({ id: user[0].id, role: "user" });
+
+    res.cookie("access_token", accessToken, {
+      httpOnly: true,
+      secure: true,
+      sameSite: "none",
+      maxAge: 7 * 24 * 60 * 60 * 1000,
+    });
+
+    res.cookie("refresh_token", refreshToken, {
+      httpOnly: true,
+      secure: true,
+      sameSite: "none",
+      maxAge: 7 * 24 * 60 * 60 * 1000,
+    });
+
+    return res.json({
+      status: true,
+      message: "OTP verified successfully",
+
+    });
+
+  } catch (err) {
+    return res.status(500).json({ status: false, error: err.message });
+  }
+};
 export const logout = async (req, res) => {
-  return res.json({ status: true, message: "Logged out successfully" });
+  try {
+    res.clearCookie("access_token", { httpOnly: true, secure: process.env.NODE_ENV === "production", sameSite: "strict" });
+    res.clearCookie("refresh_token", { httpOnly: true, secure: process.env.NODE_ENV === "production", sameSite: "strict" });
+
+    return res.json({ status: true, message: "Logged out successfully" });
+  } catch (err) {
+    return res.status(500).json({ status: false, message: err.message });
+  }
+};
+
+
+
+export const refreshToken = async (req, res) => {
+  try {
+    const cookieToken = req.cookies && (req.cookies.refresh_token || req.cookies.refreshToken || req.cookies.refresh_token);
+    const bodyToken = req.body && req.body.token;
+    const token = cookieToken || bodyToken;
+
+    if (!token) return res.status(401).json({ status: false, message: "Refresh token required" });
+
+    let decoded;
+    try {
+      decoded = jwt.verify(token, process.env.JWT_REFRESH_SECRET);
+    } catch (err) {
+      return res.status(403).json({ status: false, message: "Invalid refresh token" });
+    }
+
+    const accessToken = generateAccessToken({ id: decoded.id, role: decoded.role });
+
+    // Optionally set cookie for new access token
+    res.cookie("access_token", accessToken, {
+      httpOnly: true,
+      secure: process.env.NODE_ENV === "production",
+      sameSite: "strict",
+      maxAge: 7 * 24 * 60 * 60 * 1000
+    });
+
+    return res.json({ status: true, accessToken });
+  } catch (error) {
+    return res.status(500).json({ status: false, message: "Server error" });
+  }
 };

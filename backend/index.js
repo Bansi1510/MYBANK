@@ -7,6 +7,7 @@ import Authrouter from "./routes/auth.routes.js";
 import AdminRouter from "./routes/admin.routes.js";
 import StaffRouter from "./routes/staff.routes.js";
 import AccountRouter from "./routes/account.routes.js";
+import { initWhatsapp } from "./utils/whatsapp.js";
 
 dotenv.config();
 const PORT = 1510;
@@ -24,6 +25,7 @@ app.use(cors(corsOptions));
 app.use(express.json());
 app.use(cookieParser());
 app.use(express.urlencoded({ extended: true }));
+await initWhatsapp();
 
 
 

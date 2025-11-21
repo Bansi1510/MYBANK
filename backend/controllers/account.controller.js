@@ -27,13 +27,13 @@ export const approveAccount = async (req, res) => {
     if (existingUser.length) {
       await sql`
         INSERT INTO account_request_history (
-          request_id, name, email, mobile_number, address,
+            name, email, mobile_number, address,
           aadhar_number, pan_number, requested_account_type,
           initial_deposit, kyc_document_type, kyc_document_url,
           final_status, decided_by
         )
         VALUES (
-          ${r.id}, ${r.name}, ${r.email}, ${r.mobile_number}, ${r.address},
+            ${r.name}, ${r.email}, ${r.mobile_number}, ${r.address},
           ${r.aadhar_number}, ${r.pan_number}, ${r.requested_account_type},
           ${r.initial_deposit}, ${r.kyc_document_type}, ${r.kyc_document_url},
           'rejected', ${staffId}
@@ -50,13 +50,13 @@ export const approveAccount = async (req, res) => {
     if (action === "rejected") {
       await sql`
         INSERT INTO account_request_history (
-          request_id, name, email, mobile_number, address,
+            name, email, mobile_number, address,
           aadhar_number, pan_number, requested_account_type,
           initial_deposit, kyc_document_type, kyc_document_url,
           final_status, decided_by
         )
         VALUES (
-          ${r.id}, ${r.name}, ${r.email}, ${r.mobile_number}, ${r.address},
+          ${r.name}, ${r.email}, ${r.mobile_number}, ${r.address},
           ${r.aadhar_number}, ${r.pan_number}, ${r.requested_account_type},
           ${r.initial_deposit}, ${r.kyc_document_type}, ${r.kyc_document_url},
           'rejected', ${staffId}
@@ -100,13 +100,13 @@ export const approveAccount = async (req, res) => {
 
     await sql`
       INSERT INTO account_request_history (
-        request_id, name, email, mobile_number, address,
+          name, email, mobile_number, address,
         aadhar_number, pan_number, requested_account_type,
         initial_deposit, kyc_document_type, kyc_document_url,
         final_status, decided_by
       )
       VALUES (
-        ${r.id}, ${r.name}, ${r.email}, ${r.mobile_number}, ${r.address},
+         ${r.name}, ${r.email}, ${r.mobile_number}, ${r.address},
         ${r.aadhar_number}, ${r.pan_number}, ${r.requested_account_type},
         ${r.initial_deposit}, ${r.kyc_document_type}, ${r.kyc_document_url},
         'approved', ${staffId}
@@ -134,8 +134,29 @@ export const getAccountByNumber = async (req, res) => {
     const { accountNumber } = req.params;
 
     const acc = await sql`
-      SELECT * FROM accounts
-      WHERE account_number = ${accountNumber}
+      SELECT 
+        a.id AS account_id,
+        a.account_number,
+        a.account_type,
+        a.balance,
+        a.status,
+        a.created_at AS account_created_at,
+
+        u.id AS user_id,
+        u.name,
+        u.email,
+        u.mobile_number,
+        u.address,
+        u.aadhar_number,
+        u.pan_number,
+        u.kyc_verified,
+        u.kyc_method,
+        u.kyc_document_url,
+        u.created_at AS user_created_at
+
+      FROM accounts a
+      INNER JOIN users u ON a.user_id = u.id
+      WHERE a.account_number = ${accountNumber}
     `;
 
     if (!acc.length) {
@@ -143,10 +164,12 @@ export const getAccountByNumber = async (req, res) => {
     }
 
     res.json({ status: true, data: acc[0] });
+
   } catch (err) {
     res.status(500).json({ status: false, error: err.message });
   }
 };
+
 
 export const updateAccountStatus = async (req, res) => {
   try {
@@ -177,12 +200,10 @@ export const updateAccountStatus = async (req, res) => {
 export const getAccountBalance = async (req, res) => {
   try {
     const { accountNumber } = req.params;
-
     const rows = await sql`
       SELECT balance FROM accounts
       WHERE account_number = ${accountNumber}
     `;
-
     if (!rows.length) {
       return res.status(404).json({ status: false, message: "Account not found" });
     }

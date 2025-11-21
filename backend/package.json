@@ -14,6 +14,7 @@
   "dependencies": {
     "@google/generative-ai": "^0.24.1",
     "@neondatabase/serverless": "^1.0.2",
+    "@whiskeysockets/baileys": "^7.0.0-rc.8",
     "bcrypt": "^6.0.0",
     "bcryptjs": "^3.0.3",
     "cloudinary": "^2.8.0",
@@ -33,9 +34,11 @@
     "nodemailer": "^7.0.10",
     "nodemon": "^3.1.10",
     "openai": "^6.9.1",
+    "otp-generator": "^4.0.1",
     "pg": "^8.16.3",
+    "qrcode-terminal": "^0.12.0",
     "sequelize": "^6.37.7",
-    "twilio": "^5.10.5",
+    "twilio": "^5.10.6",
     "xss-clean": "^0.1.4"
   }
 }
