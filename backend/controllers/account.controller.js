@@ -247,8 +247,17 @@ export const updateAccountBalance = async (req, res) => {
       RETURNING balance
     `;
 
+    // Insert transaction record
+    await sql`
+      INSERT INTO transactions
+        (account_number, transaction_type, amount, currency, from_account, to_account, description, status, initiated_by_staff)
+      VALUES
+        (${accountNumber}, ${type}, ${amount}, 'INR', 'BANK', ${accountNumber}, 'Bank initiated transaction', 'success', ${req.id})
+    `;
+
     res.json({ status: true, balance: updated[0].balance });
   } catch (err) {
     res.status(500).json({ status: false, error: err.message });
   }
 };
+

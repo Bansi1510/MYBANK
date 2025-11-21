@@ -14,8 +14,6 @@ export function formatNumber(num) {
 }
 
 
-
-
 export async function initWhatsapp() {
   const { state, saveCreds } = await useMultiFileAuthState("whatsapp-session");
 

@@ -10,16 +10,16 @@ import {
   addAdmin
 } from "../controllers/auth.controller.js";
 
-const Authrouter = express.Router();
+const AuthRouter = express.Router();
 
-Authrouter.post("/user/login", loginUser);
-Authrouter.post("/staff/login", loginStaff);
-Authrouter.post("/admin/login", loginAdmin);
-Authrouter.post("/user/add-admin", addAdmin);
-Authrouter.post("/user/send-otp", sendOTP);
-Authrouter.post("/user/verify-otp", verifyOTP);
+AuthRouter.post("/user/login", loginUser);
+AuthRouter.post("/staff/login", loginStaff);
+AuthRouter.post("/admin/login", loginAdmin);
+AuthRouter.post("/user/add-admin", addAdmin);
+AuthRouter.post("/user/send-otp", sendOTP);
+AuthRouter.post("/user/verify-otp", verifyOTP);
 
-Authrouter.post("/refresh-token", refreshToken);
-Authrouter.post("/logout", logout);
+AuthRouter.post("/refresh-token", refreshToken);
+AuthRouter.post("/logout", logout);
 
-export default Authrouter;
+export default AuthRouter;
