@@ -74,45 +74,7 @@ export const addAdmin = async (req, res) => {
   }
 };
 
-export const loginUser = async (req, res) => {
-  try {
-    const { account_number, password } = req.body;
 
-    if (!account_number || !password)
-      return res.status(400).json({ status: false, message: "Missing fields" });
-
-    // 1. Fetch account
-    const account = await sql`
-      SELECT * FROM accounts WHERE account_number = ${account_number}
-    `;
-
-    if (!account.length)
-      return res.status(404).json({ status: false, message: "Account not found" });
-
-    // 2. Fetch user
-    const user = await sql`
-      SELECT * FROM users WHERE id = ${account[0].user_id}
-    `;
-
-    if (!user.length)
-      return res.status(404).json({ status: false, message: "User not found" });
-
-    // 3. Compare password
-    const match = await bcrypt.compare(password, user[0].password);
-    if (!match)
-      return res.status(401).json({ status: false, message: "Wrong password" });
-
-    // Step 1 success → request OTP
-    return res.json({
-      status: true,
-      message: "Password correct. OTP required.",
-      mobile_number: user[0].mobile_number
-    });
-
-  } catch (err) {
-    return res.status(500).json({ status: false, error: err.message });
-  }
-};
 
 export const loginStaff = async (req, res) => {
   try {
@@ -226,19 +188,60 @@ export const loginAdmin = async (req, res) => {
   }
 };
 
+export const loginUser = async (req, res) => {
+  try {
+    const { account_number, password } = req.body;
 
+    if (!account_number || !password)
+      return res.status(400).json({ status: false, message: "Missing fields" });
+
+    const account = await sql`
+      SELECT * FROM accounts WHERE account_number = ${account_number}
+    `;
+
+    if (!account.length)
+      return res.status(404).json({ status: false, message: "Account not found" });
+
+    const user = await sql`
+      SELECT * FROM users WHERE id = ${account[0].user_id}
+    `;
+
+    if (!user.length)
+      return res.status(404).json({ status: false, message: "User not found" });
+
+    const match = await bcrypt.compare(password, user[0].password);
+    if (!match)
+      return res.status(401).json({ status: false, message: "Wrong password" });
+
+    // Step 1 success → request OTP
+    return res.json({
+      status: true,
+      message: "Password correct. OTP required.",
+      mobile_number: user[0].mobile_number,
+      account_number, user: user[0]
+    });
+
+  } catch (err) {
+    return res.status(500).json({ status: false, error: err.message });
+  }
+};
 
 export const sendOTP = async (req, res) => {
   try {
-    const { mobile_number } = req.body;
-
+    const { mobile_number, account_number } = req.body;
+    console.log(mobile_number, account_number);
     if (!mobile_number)
       return res.status(400).json({ status: false, message: "Mobile number required" });
 
     const user = await sql`
-      SELECT * FROM users WHERE mobile_number = ${mobile_number}
-    `;
+  SELECT u.*, a.account_number
+  FROM users u
+  JOIN accounts a ON u.id = a.user_id
+  WHERE u.mobile_number = ${mobile_number}
+    AND a.account_number = ${account_number}
+`;
 
+    console.log(user);
     if (!user.length)
       return res.status(404).json({ status: false, message: "User not found" });
 
@@ -275,11 +278,11 @@ export const verifyOTP = async (req, res) => {
     if (!user.length)
       return res.status(404).json({ status: false, message: "User not found" });
 
-    const isValid = bcrypt.compareSync(otp, user[0].otp); // ✅ compare entered OTP with hashed OTP
+    const isValid = bcrypt.compareSync(otp, user[0].otp);
     if (!isValid)
       return res.status(400).json({ status: false, message: "Invalid OTP" });
 
-    // Clear OTP after success
+
     await sql`
       UPDATE users SET otp = NULL WHERE mobile_number = ${mobile_number}
     `;
