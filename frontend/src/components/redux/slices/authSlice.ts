@@ -1,38 +1,55 @@
 import { createSlice } from "@reduxjs/toolkit";
 import type { PayloadAction } from "@reduxjs/toolkit";
 
-interface User {
+export interface Account {
   id: number;
-  full_name: string;
+  account_number: string;
+  account_type: string;
+  balance: string;
+  status: string;
+}
+
+export interface UserProfile {
+  id: number;
+  name: string;
   email: string;
-  phone: string;
-  user_type: string;
-  kyc_verified: boolean;
-  created_at: string;
+  mobile_number: string;
+  address: string;
+
+  aadhar_number?: string;
+  kyc_verified?: boolean;
+  created_at?: string;
+
+  accounts: Account[];
 }
 
 interface AuthState {
-  user: User | null;
- 
+  userId: number | null;      
+  profile: UserProfile | null; 
 }
 
 const initialState: AuthState = {
-  user: null,       
- 
+  userId: null,
+  profile: null,
 };
 
 const authSlice = createSlice({
   name: "auth",
   initialState,
   reducers: {
-    setUser: (state, action: PayloadAction<User | null>) => {
-      state.user = action.payload;
+    setUserId(state, action: PayloadAction<number>) {
+      state.userId = action.payload;
     },
-     clearUser(state) {
-      state.user = null;
-    },
-  }
-})
+   setUserProfile(state, action: PayloadAction<UserProfile | null>) {
+  state.profile = action.payload;
+},
 
-export const Authactions = authSlice.actions;
+    clearAuth(state) {
+      state.userId = null;
+      state.profile = null;
+    },
+  },
+});
+
+export const { setUserId, setUserProfile, clearAuth } = authSlice.actions;
 export default authSlice.reducer;

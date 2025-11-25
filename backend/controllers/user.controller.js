@@ -47,7 +47,7 @@ export const getUserProfile = async (req, res) => {
       } : null).filter(Boolean)
     };
 
-    res.json({ status: true, data: user });
+    res.json({ status: true, user });
 
   } catch (err) {
     console.error(err);
@@ -81,7 +81,7 @@ export const getUserAccounts = async (req, res) => {
     WHERE user_id = ${userId}
   `;
 
-  res.json({ status: true, data: accounts });
+  res.json({ status: true, accounts });
 };
 export const getUserTransactions = async (req, res) => {
   const userId = req.id;
@@ -95,6 +95,6 @@ export const getUserTransactions = async (req, res) => {
     LIMIT 100
   `;
 
-  res.json({ status: true, data: transactions });
+  res.json({ status: true, transactions });
 };
 

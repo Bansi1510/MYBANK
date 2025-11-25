@@ -22,8 +22,7 @@ const store = configureStore({
     getDefaultMiddleware({ serializableCheck: false }),
 });
 
-// Export RootState and AppDispatch types for use across your app
-export type RootState = ReturnType<typeof store.getState>;
+ export type RootState = ReturnType<typeof store.getState>;
 export type AppDispatch = typeof store.dispatch;
 
 export const persistor = persistStore(store);

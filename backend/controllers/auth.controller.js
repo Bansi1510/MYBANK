@@ -218,7 +218,7 @@ export const loginUser = async (req, res) => {
       status: true,
       message: "Password correct. OTP required.",
       mobile_number: user[0].mobile_number,
-      account_number, user: user[0]
+      account_number
     });
 
   } catch (err) {
@@ -248,7 +248,6 @@ export const sendOTP = async (req, res) => {
     const otp = generateOTP();
     const hashedOtp = hashOTP(otp);
 
-    // Save OTP in DB
     await sql`
       UPDATE users SET otp = ${hashedOtp}
       WHERE mobile_number = ${mobile_number}
@@ -266,27 +265,37 @@ export const sendOTP = async (req, res) => {
 
 export const verifyOTP = async (req, res) => {
   try {
-    const { mobile_number, otp } = req.body;
+    const { mobile_number, otp, account_number } = req.body;
 
-    if (!mobile_number || !otp)
+    if (!mobile_number || !otp || !account_number)
       return res.status(400).json({ status: false, message: "Missing fields" });
 
+    // 1. Find user whose mobile number matches AND has the given account
     const user = await sql`
-      SELECT id, otp FROM users WHERE mobile_number = ${mobile_number}
+      SELECT u.id, u.otp
+      FROM users u
+      JOIN accounts a ON a.user_id = u.id
+      WHERE u.mobile_number = ${mobile_number}
+      AND a.account_number = ${account_number}
     `;
 
     if (!user.length)
-      return res.status(404).json({ status: false, message: "User not found" });
+      return res.status(404).json({
+        status: false,
+        message: "Mobile number & account number do not match"
+      });
 
+    // 2. Verify OTP
     const isValid = bcrypt.compareSync(otp, user[0].otp);
     if (!isValid)
       return res.status(400).json({ status: false, message: "Invalid OTP" });
 
-
+    // 3. Clear OTP after success
     await sql`
       UPDATE users SET otp = NULL WHERE mobile_number = ${mobile_number}
     `;
 
+    // 4. Generate tokens
     const accessToken = generateAccessToken({ id: user[0].id, role: "user" });
     const refreshToken = generateRefreshToken({ id: user[0].id, role: "user" });
 
@@ -295,6 +304,7 @@ export const verifyOTP = async (req, res) => {
       secure: true,
       sameSite: "none",
       maxAge: 7 * 24 * 60 * 60 * 1000,
+      path: "/"
     });
 
     res.cookie("refresh_token", refreshToken, {
@@ -302,28 +312,43 @@ export const verifyOTP = async (req, res) => {
       secure: true,
       sameSite: "none",
       maxAge: 7 * 24 * 60 * 60 * 1000,
+      path: "/"
     });
 
+    // 5. Safe response
     return res.json({
       status: true,
       message: "OTP verified successfully",
-
+      user_id: user[0].id
     });
 
   } catch (err) {
     return res.status(500).json({ status: false, error: err.message });
   }
 };
+
+
 export const logout = async (req, res) => {
   try {
-    res.clearCookie("access_token", { httpOnly: true, secure: process.env.NODE_ENV === "production", sameSite: "strict" });
-    res.clearCookie("refresh_token", { httpOnly: true, secure: process.env.NODE_ENV === "production", sameSite: "strict" });
+    console.log("hello backend");
+
+    const cookieOptions = {
+      httpOnly: true,
+      secure: process.env.NODE_ENV === "production",
+      sameSite: "lax",
+      path: "/"
+    };
+
+    res.clearCookie("access_token", cookieOptions);
+    res.clearCookie("refresh_token", cookieOptions);
 
     return res.json({ status: true, message: "Logged out successfully" });
   } catch (err) {
+    console.log(err.message);
     return res.status(500).json({ status: false, message: err.message });
   }
 };
+
 
 
 

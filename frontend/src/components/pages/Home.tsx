@@ -1,20 +1,21 @@
-import CallToActionTestimonials from "../Home/CallToActionTestimonials";
-import Footer from "../Home/Footer";
-import HeroSection from "../Home/HeroSection";
-import SecurityTrust from "../Home/SecurityTrust";
-import ServicesOverview from "../Home/ServicesOverview";
+import React from "react";
 import Navbar from "../shared/Navbar";
+import Hero from "../Home/Hero";
+import Features from "../Home/Features";
+import Services from "../Home/Services";
+import Stats from "../Home/Stats";
+import Footer from "../shared/Footer";
 
-const Home = (): React.JSX.Element => (
-   <>
-    <Navbar/>
-    <HeroSection/>
-    <ServicesOverview />
-    <SecurityTrust />
-    <CallToActionTestimonials />
-    <Footer/>
+
+const Home: React.FC = () => {
+   return <>
+      <Navbar />
+      <Hero />
+      <Features />
+      <Services />
+      <Stats />
+      <Footer />
    </>
-);
-
+};
 
 export default Home;
