@@ -6,7 +6,8 @@ import Login from "./components/auth/Login";
 import Profile from "./components/auth/Profile";
 import { Accounts } from "./components/pages/Accounts";
 import Services from "./components/pages/Services";
-
+import TransactionScreen from "./components/transaction/TransactionScreen";
+import Contant from "./components/pages/Contact";
 
 const appRouter = createBrowserRouter([
   {
@@ -28,6 +29,14 @@ const appRouter = createBrowserRouter([
   {
     path: "/services",
     element: <Services />
+  },
+  {
+    path: "/transaction/:type",
+    element: <TransactionScreen />
+  },
+  {
+    path: "/contact",
+    element: <Contant />
   }
 
 ]);

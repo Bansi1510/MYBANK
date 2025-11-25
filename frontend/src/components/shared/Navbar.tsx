@@ -22,7 +22,7 @@ const Navbar: React.FC = () => {
         <Link
           to="/"
           className="text-3xl font-extrabold tracking-widest 
-          bg-gradient-to-r from-blue-700 to-indigo-700 
+          bg-linear-to-r from-blue-700 to-indigo-700 
           bg-clip-text text-transparent drop-shadow-sm"
         >
           MYBANK
@@ -33,7 +33,7 @@ const Navbar: React.FC = () => {
           <Link className="hover:text-blue-700 transition-all" to="/services">Services</Link>
           <Link className="hover:text-blue-700 transition-all" to="/accounts">Accounts</Link>
           <Link className="hover:text-blue-700 transition-all" to="#">Loans</Link>
-          <Link className="hover:text-blue-700 transition-all" to="#">Contact</Link>
+          <Link className="hover:text-blue-700 transition-all" to="/contact">Contact</Link>
         </div>
 
         {/* RIGHT SIDE BUTTON */}
@@ -70,7 +70,7 @@ const Navbar: React.FC = () => {
             <button
               onClick={handleLogout}
               className="px-5 py-2 rounded-xl 
-              bg-gradient-to-r from-red-500 to-red-600 
+             bg-linear-to-r from-red-500 to-red-600 
               text-white font-semibold 
               shadow-sm hover:shadow-md transition-all"
             >
