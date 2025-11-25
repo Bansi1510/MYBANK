@@ -1,40 +1,26 @@
 import React from "react";
 
-import AccountHeader from "../accounts/AccountHeader";
+import Navbar from "../shared/Navbar";
+import { useFetchAccountDetail } from "../hooks/useFetchAccountDetails";
 import AccountContainer from "../accounts/AccountContainer";
-import InsightsPanel from "../accounts/InsightsPanel";
-import AccountActions from "../accounts/AccountActions";
-import RecentTransactions from "../accounts/RecentTransactions";
+import FeatureGrid from "../accounts/FeatureGrid";
+import Hero from "../accounts/Hero";
 
-const Accounts: React.FC = () => {
-  const accounts = [
-    {
-      account_number: "27069615575690",
-      account_type: "Savings",
-      balance: 70000,
-      status: "active",
-      created_at: "2025-11-20T01:04:47.251Z",
-    },
-  ];
 
-  const recentTx = [
-    { id: 1, title: "UPI Payment", amount: -1299, date: "2025-11-21" },
-    { id: 2, title: "Salary Credit", amount: 42000, date: "2025-11-20" },
-  ];
+export const Accounts: React.FC = () => {
 
+  const { data, loading, error } = useFetchAccountDetail();
+  console.log(data)
+  if (loading) return <p>Loading account details...</p>;
+  if (error) return <p style={{ color: "red" }}>{error}</p>;
   return (
-    <div className="w-full px-6 py-6 bg-[#f8fafc] flex flex-col gap-8">
-      <AccountHeader />
-
-      <AccountContainer accounts={accounts} />
-
-      <InsightsPanel accounts={accounts} />
-
-      <AccountActions />
-
-      <RecentTransactions transactions={recentTx} />
-    </div>
+    <>
+      <Navbar />
+      <div className="w-full mt-18 p-6 space-y-10 bg-gray-50 min-h-screen">
+        <Hero />
+        <AccountContainer account={data} />
+        <FeatureGrid />
+      </div>
+    </>
   );
 };
-
-export default Accounts;

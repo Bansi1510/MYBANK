@@ -30,7 +30,7 @@ const Navbar: React.FC = () => {
 
         {/* MENU — Desktop */}
         <div className="hidden md:flex items-center space-x-10 font-medium">
-          <Link className="hover:text-blue-700 transition-all" to="#">Services</Link>
+          <Link className="hover:text-blue-700 transition-all" to="/services">Services</Link>
           <Link className="hover:text-blue-700 transition-all" to="/accounts">Accounts</Link>
           <Link className="hover:text-blue-700 transition-all" to="#">Loans</Link>
           <Link className="hover:text-blue-700 transition-all" to="#">Contact</Link>

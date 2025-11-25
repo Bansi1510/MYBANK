@@ -81,7 +81,7 @@ export const getUserAccounts = async (req, res) => {
     WHERE user_id = ${userId}
   `;
 
-  res.json({ status: true, accounts });
+  res.json({ status: true, account: accounts[0] });
 };
 export const getUserTransactions = async (req, res) => {
   const userId = req.id;

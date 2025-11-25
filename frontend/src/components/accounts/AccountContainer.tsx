@@ -2,25 +2,34 @@ import React from "react";
 import AccountCard from "./AccountCard";
 
 interface Account {
+  id: number;
   account_number: string;
   account_type: string;
-  balance: number;
   status: string;
+  name: string;
+  email: string;
+  mobile_number: string;
+  address: string;
+  balance: string;
   created_at: string;
 }
 
 interface Props {
-  accounts: Account[];
+  account: Account | null;
 }
 
-const AccountContainer: React.FC<Props> = ({ accounts }) => {
+const AccountContainer: React.FC<Props> = ({ account }) => {
+  if (!account) return <p>No account available</p>;
   return (
-    <div className="grid grid-cols-1 md:grid-cols-2 gap-6">
-      {accounts.map((acc) => (
-        <AccountCard key={acc.account_number} account={acc} />
-      ))}
-    </div>
+    <section className="space-y-4">
+      <h2 className="text-2xl font-semibold text-gray-800">Your Account</h2>
+
+      <div className="grid md:grid-cols-2 lg:grid-cols-3 gap-6">
+
+        <AccountCard key={account.id} account={account} />
+
+      </div>
+    </section>
   );
 };
-
 export default AccountContainer;
