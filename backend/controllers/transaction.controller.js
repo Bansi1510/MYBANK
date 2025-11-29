@@ -2,7 +2,7 @@ import sql from "../utils/db.js";
 import PDFDocument from "pdfkit";
 
 
-export const transfer = async (req, res) => {
+export const transferViaAcc = async (req, res) => {
   const userId = req.id;
   const { toAccount, amount, description } = req.body;
 
@@ -10,8 +10,10 @@ export const transfer = async (req, res) => {
     await sql`BEGIN`;
 
     const sender = await sql`
-      SELECT * FROM accounts
-      WHERE user_id = ${userId}
+      SELECT a.*, u.name
+      FROM accounts a
+      JOIN users u ON u.id = a.user_id
+      WHERE a.user_id = ${userId}
     `;
 
     if (!sender.length) {
@@ -27,8 +29,10 @@ export const transfer = async (req, res) => {
     }
 
     const receiver = await sql`
-      SELECT * FROM accounts
-      WHERE account_number = ${toAccount}
+      SELECT a.*, u.name, u.mobile_number
+      FROM accounts a
+      JOIN users u ON u.id = a.user_id
+      WHERE a.account_number = ${toAccount}
     `;
 
     if (!receiver.length) {
@@ -63,25 +67,49 @@ export const transfer = async (req, res) => {
       WHERE account_number = ${receiverAcc.account_number}
     `;
 
-    await sql`
+    const transaction = await sql`
       INSERT INTO transactions
         (account_number, transaction_type, amount, currency, from_account, to_account, description, status, initiated_by_user)
       VALUES
         (${senderAcc.account_number}, 'transfer', ${amount}, 'INR', ${senderAcc.account_number}, ${receiverAcc.account_number}, ${description}, 'success', ${userId})
+      RETURNING id, created_at
     `;
+
+    const txn = transaction[0];
 
     await sql`COMMIT`;
 
-    res.json({
+
+    return res.json({
       status: true,
       message: "Transfer successful",
-      sender_balance: newSenderBalance,
+      transaction: {
+        transaction_id: txn.id,
+        timestamp: txn.created_at,
+        amount: amount,
+        currency: "INR",
+        note: description || null,
+
+        sender: {
+          account_number: senderAcc.account_number,
+          name: senderAcc.name || "You",
+          balance_after: newSenderBalance,
+        },
+
+        receiver: {
+          account_number: receiverAcc.account_number,
+          name: receiverAcc.name,
+          mobile: receiverAcc.mobile_number,
+        },
+      },
     });
+
   } catch (err) {
     await sql`ROLLBACK`;
-    res.status(500).json({ status: false, error: err.message });
+    return res.status(500).json({ status: false, error: err.message });
   }
 };
+
 
 export const getTransactionHistory = async (req, res) => {
   const userId = req.id;
@@ -284,6 +312,126 @@ export const downloadStatement = async (req, res) => {
     return res.status(500).json({ status: false, message: err.message });
   }
 };
+export const transferViaMobile = async (req, res) => {
+  try {
+    const { senderAccountNumber, recipientMobile, amount, note } = req.body;
+
+    if (!senderAccountNumber || !recipientMobile || !amount) {
+      return res.status(400).json({ status: false, message: "Missing fields" });
+    }
+
+    const sender = await sql`
+      SELECT * FROM accounts
+      WHERE account_number = ${senderAccountNumber}
+      AND status = 'active'
+    `;
+
+    if (!sender.length)
+      return res.status(404).json({ status: false, message: "Sender account not found" });
+
+    if (Number(sender[0].balance) < amount)
+      return res.status(400).json({ status: false, message: "Insufficient balance" });
+
+    const recipient = await sql`
+      SELECT a.*, u.mobile_number, u.name
+      FROM accounts a
+      JOIN users u ON u.id = a.user_id
+      WHERE u.mobile_number = ${recipientMobile}
+      AND a.status = 'active'
+      LIMIT 1
+    `;
+
+    if (!recipient.length)
+      return res.status(404).json({ status: false, message: "Recipient not found" });
+
+    const receiverAcc = recipient[0];
+
+    await sql`BEGIN`;
+
+    let transactionRow;
+
+    try {
+      const updatedSender = await sql`
+        UPDATE accounts
+        SET balance = balance - ${amount}
+        WHERE account_number = ${senderAccountNumber}
+          AND balance >= ${amount}
+        RETURNING id
+      `;
+
+      if (!updatedSender.length) throw new Error("Insufficient balance");
+
+      await sql`
+        UPDATE accounts
+        SET balance = balance + ${amount}
+        WHERE id = ${receiverAcc.id}
+      `;
+
+      transactionRow = await sql`
+        INSERT INTO transactions (
+          account_number,
+          transaction_type,
+          amount,
+          currency,
+          from_account,
+          to_account,
+          description,
+          status,
+          initiated_by_user
+        )
+        VALUES (
+          ${senderAccountNumber},
+          'upi',
+          ${amount},
+          'INR',
+          ${senderAccountNumber},
+          ${receiverAcc.account_number},
+          ${note || `Money sent to ${recipientMobile}`},
+          'success',
+          ${req.id}
+        )
+        RETURNING id, created_at
+      `;
+
+      await sql`COMMIT`;
+    } catch (txnErr) {
+      await sql`ROLLBACK`;
+      throw txnErr;
+    }
+
+    return res.status(200).json({
+      status: true,
+      message: "Money sent successfully via Mobile",
+      transaction: {
+        transaction_id: transactionRow[0].id,
+        timestamp: transactionRow[0].created_at,
+
+        amount,
+        currency: "INR",
+        note: note || null,
+
+        sender: {
+          account_number: sender[0].account_number,
+          name: sender[0].account_holder || "You"
+        },
+
+        receiver: {
+          account_number: receiverAcc.account_number,
+          mobile: receiverAcc.mobile_number,
+          name: receiverAcc.name
+        }
+      }
+    });
+
+  } catch (error) {
+    console.error("Transaction error:", error);
+    return res.status(500).json({
+      status: false,
+      message: "Internal server error"
+    });
+  }
+};
+
 
 
 

@@ -13,8 +13,8 @@ const MainOffice: React.FC = () => {
 
       <address className="not-italic max-w-md text-gray-700 space-y-2 text-lg">
         <p className="font-semibold text-gray-900">MyBank Global Headquarters</p>
-        <p>Platinum Tower, Sector 5, Mumbai, India</p>
-        <p>PIN: 400001</p>
+        <p>Shubhash nagar , Bhavnagar , Gujarat</p>
+        <p>PIN: 364002</p>
         <p className="pt-2 text-sm text-gray-500">
           Operating Hours: Monday–Saturday, 9:00 AM – 6:00 PM (IST)
         </p>

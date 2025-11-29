@@ -8,6 +8,8 @@ import Footer from "../shared/Footer";
 
 
 const Home: React.FC = () => {
+
+
    return <>
       <Navbar />
       <Hero />

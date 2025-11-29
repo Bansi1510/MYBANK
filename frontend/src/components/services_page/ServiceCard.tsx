@@ -1,25 +1,24 @@
-import React from "react";
 import type { IconType } from "react-icons";
-
-interface Props {
-  icon: IconType;
+import { useNavigate } from "react-router-dom";
+interface ServiceCardProps {
   title: string;
   description: string;
+  icon: IconType;
+  path?: string;
 }
-const ServiceCard: React.FC<Props> = ({ icon: Icon, title, description }) => {
+
+
+const ServiceCard = ({ title, description, icon: Icon, path }: ServiceCardProps) => {
+  const navigate = useNavigate();
+
   return (
-    <div className="bg-white border border-gray-200 rounded-2xl p-6 shadow-sm hover:shadow-md transition-all duration-200">
-
-      <div className="flex items-center gap-4 mb-4">
-        <div className="p-3 bg-blue-50 rounded-xl">
-          <Icon size={28} className="text-blue-700" />
-        </div>
-        <h3 className="text-lg font-semibold text-gray-900">{title}</h3>
-      </div>
-
-      <p className="text-gray-600 leading-relaxed text-sm">
-        {description}
-      </p>
+    <div
+      className="p-4 border rounded-xl cursor-pointer hover:shadow-lg"
+      onClick={() => path && navigate(path)}
+    >
+      <Icon className="text-3xl mb-2" />
+      <h3 className="text-lg font-semibold">{title}</h3>
+      <p className="text-gray-600">{description}</p>
     </div>
   );
 };

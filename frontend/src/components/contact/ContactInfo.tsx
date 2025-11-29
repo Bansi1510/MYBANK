@@ -21,12 +21,12 @@ const ContactInfo: React.FC = () => {
         <p>
           <strong className="text-slate-900">Email:</strong>{" "}
           <a href="mailto:support@mybank.com" className="text-sky-600 hover:underline">
-            support@mybank.com
+            mybank15@gmail.com
           </a>
         </p>
         <p className="flex items-center gap-2">
           <FaGlobe className="text-gray-500" />{" "}
-          <a href="https://www.mybank.com" className="text-sky-600 hover:underline">
+          <a href="https://mkbhavuni.edu.in" target="_blank" className="text-sky-600 hover:underline">
             www.mybank.com
           </a>
         </p>
