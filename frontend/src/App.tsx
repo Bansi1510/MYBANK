@@ -18,6 +18,7 @@ import ElectricityBill from "./components/services_page/utility/ElectricityBill"
 import MobileRecharge from "./components/services_page/utility/MobileRecharge";
 import InsurancePremium from "./components/services_page/utility/InsurancePremium";
 import UpiSuccess from "./components/services_page/upi/UpiSuccess";
+import Loans from "./components/pages/Loans";
 
 const appRouter = createBrowserRouter([
   {
@@ -47,6 +48,10 @@ const appRouter = createBrowserRouter([
   {
     path: "/contact",
     element: <Contant />
+  },
+  {
+    path: "/loans",
+    element: <Loans />
   },
 
   //services

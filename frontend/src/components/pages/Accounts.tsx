@@ -1,4 +1,4 @@
-import React from "react";
+import React, { useEffect } from "react";
 
 import Navbar from "../shared/Navbar";
 import { useFetchAccountDetail } from "../hooks/useFetchAccountDetails";
@@ -9,8 +9,10 @@ import Hero from "../accounts/Hero";
 
 export const Accounts: React.FC = () => {
 
-  const { data, loading, error } = useFetchAccountDetail();
-  console.log(data)
+  const { data, loading, error, refetch } = useFetchAccountDetail();
+  useEffect(() => {
+    refetch();
+  }, []);
   if (loading) return <p>Loading account details...</p>;
   if (error) return <p style={{ color: "red" }}>{error}</p>;
   return (

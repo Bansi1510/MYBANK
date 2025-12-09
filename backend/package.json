@@ -14,6 +14,7 @@
   "dependencies": {
     "@google/generative-ai": "^0.24.1",
     "@neondatabase/serverless": "^1.0.2",
+    "@tailwindcss/vite": "^4.1.17",
     "@whiskeysockets/baileys": "^7.0.0-rc.8",
     "bcrypt": "^6.0.0",
     "bcryptjs": "^3.0.3",
@@ -40,6 +41,7 @@
     "pg": "^8.16.3",
     "qrcode-terminal": "^0.12.0",
     "sequelize": "^6.37.7",
+    "tailwindcss": "^4.1.17",
     "twilio": "^5.10.6",
     "xss-clean": "^0.1.4"
   }
