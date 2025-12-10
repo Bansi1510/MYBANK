@@ -78,10 +78,10 @@ export const addAdmin = async (req, res) => {
 
 export const loginStaff = async (req, res) => {
   try {
-    const { error } = loginSchema.validate(req.body);
-    if (error) return res.status(400).json({ status: false, message: error.message });
+
 
     const { email, password } = req.body;
+    console.log("Hello")
 
     const rows = await sql`
       SELECT * FROM staff_admins 
