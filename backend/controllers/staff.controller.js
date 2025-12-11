@@ -49,6 +49,7 @@ export const requestNewAccount = async (req, res) => {
       data: newRequest[0]
     });
   } catch (err) {
+    console.log(err.message)
     return res.status(500).json({ status: false, message: err.message });
   }
 };

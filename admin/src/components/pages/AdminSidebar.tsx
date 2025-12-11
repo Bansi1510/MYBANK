@@ -12,7 +12,7 @@ const sidebarOptions = [
   { name: "Settings", path: "settings" },
 ];
 
-const Sidebar: React.FC = () => {
+const AdminSidebar: React.FC = () => {
   return (
     <div className="w-64 bg-gray-100 h-screen p-4 flex flex-col">
       <h2 className="text-lg font-bold mb-6 text-center">Admin Menu</h2>
@@ -34,4 +34,4 @@ const Sidebar: React.FC = () => {
   );
 };
 
-export default Sidebar;
+export default AdminSidebar;
