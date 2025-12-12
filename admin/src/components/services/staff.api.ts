@@ -36,7 +36,7 @@ export const newAccountReqAPI=async(formData:formDataInterFace):Promise<boolean>
     }
   } catch (error: unknown) {
       const axiosErr = error as AxiosError<{ message?: string }>;
-      const msg = axiosErr.response?.data?.message || "Login Error";
+      const msg = axiosErr.response?.data?.message || "New Account Error";
       toast.error(msg);
       return false
     }

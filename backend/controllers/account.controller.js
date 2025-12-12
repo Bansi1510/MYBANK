@@ -3,7 +3,7 @@ import sendEmail from "../utils/sendEmail.js";
 import { generateAccountNumber } from "../utils/generateAccountNumber.js";
 import bcrypt from "bcrypt";
 
-export const approveAccount = async (req, res) => {
+export const chnageAccountStatus = async (req, res) => {
   try {
     const { requestId } = req.params;
     const { action } = req.body;
@@ -127,7 +127,6 @@ export const approveAccount = async (req, res) => {
     res.status(500).json({ status: false, error: err.message });
   }
 };
-
 
 export const getAccountByNumber = async (req, res) => {
   try {

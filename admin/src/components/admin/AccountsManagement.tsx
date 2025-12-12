@@ -1,31 +1,46 @@
 import React from "react";
+import { Outlet, Link, useMatch } from "react-router-dom";
 
 const AccountsManagement: React.FC = () => {
-  // Array of buttons with title and optional description
+  const match = useMatch("/admin/accounts/*");
+  const isChildActive = !!match?.pathname.split("/")[3];
+
   const actions = [
-    { title: "New Account Requests", description: "View and approve new accounts" },
-    { title: "Loan Requests", description: "Check and approve loans" },
-    { title: "Transaction History", description: "View all transactions" },
-    { title: "Active Accounts", description: "Manage all active accounts" },
-    { title: "Closed Accounts", description: "View closed accounts" },
-    { title: "Account Reports", description: "Generate account reports" },
-    { title: "Account Alerts", description: "Monitor account alerts" },
-    { title: "Settings", description: "Manage account settings" },
+    { title: "New Account Requests", desc: "View and approve new accounts", link: "new-requests" },
+    { title: "Loan Requests", desc: "Check and approve loans", link: "loan-requests" },
+    { title: "Transaction History", desc: "View all transactions", link: "transactions" },
+    { title: "Active Accounts", desc: "Manage all active accounts", link: "active" },
+    { title: "Closed Accounts", desc: "View closed accounts", link: "closed" },
+    { title: "Account Reports", desc: "Generate account reports", link: "reports" },
+    { title: "Account Alerts", desc: "Monitor account alerts", link: "alerts" },
+    { title: "Settings", desc: "Manage account settings", link: "settings" },
   ];
 
   return (
-    <div className="p-6">
-      <h2 className="text-2xl font-bold mb-6">Accounts Management</h2>
-      <div className="grid grid-cols-1 sm:grid-cols-2 md:grid-cols-4 gap-4">
-        {actions.map((action, index) => (
-          <button
-            key={index}
-            className="bg-blue-600 text-white p-4 rounded-lg shadow hover:bg-blue-700 transition-colors flex flex-col justify-between"
-          >
-            <span className="font-semibold">{action.title}</span>
-            <span className="text-sm text-blue-100">{action.description}</span>
-          </button>
-        ))}
+    <div className="min-h-screen">
+
+      {!isChildActive && (
+        <div className="p-6">
+          <h2 className="text-2xl font-bold mb-6">Accounts Management</h2>
+
+          <div className="grid grid-cols-1 sm:grid-cols-2 md:grid-cols-4 gap-4">
+            {actions.map((item, idx) => (
+              <Link
+                key={idx}
+                to={item.link}
+                className="block bg-blue-600 text-white p-6 rounded-xl shadow hover:bg-blue-700 transition text-center"
+              >
+                <div className="text-lg font-semibold">{item.title}</div>
+                <div className="text-sm opacity-80 mt-1">{item.desc}</div>
+              </Link>
+            ))}
+          </div>
+        </div>
+      )}
+
+      {/* Child Components Appear Here (TOP ALIGNED) */}
+      <div className={isChildActive ? "min-h-screen bg-gray-50 p-6" : "mt-6"}>
+        <Outlet />
       </div>
     </div>
   );

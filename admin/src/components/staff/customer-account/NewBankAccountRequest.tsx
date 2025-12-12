@@ -193,6 +193,7 @@ const NewBankAccountRequest: React.FC = () => {
             />
           </div> */}
 
+
           {/* Account Type */}
           <div>
             <label className="block text-sm font-semibold text-gray-700 mb-1">Account Type *</label>

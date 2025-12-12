@@ -12,9 +12,11 @@ export interface AdminStaff{
 interface AuthState{
   userData:AdminStaff|null
 }
+
 const initialState:AuthState={
   userData:null
 }
+
 const authSlice=createSlice({
   name:'auth',
   initialState,

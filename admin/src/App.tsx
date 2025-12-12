@@ -11,6 +11,8 @@ import CustomerAccounts from './components/staff/CustomerAccounts'
 import KYCVerification from './components/staff/KYCVerification'
 import DailyTransactions from './components/staff/DailyTransactions'
 import NewBankAccountRequest from './components/staff/customer-account/NewBankAccountRequest'
+import AdminNewAccountRequests from './components/admin/account-management/AdminNewAccountRequests'
+
 
 
 const appRouter = createBrowserRouter([
@@ -22,11 +24,26 @@ const appRouter = createBrowserRouter([
     path: "/admin",
     element: <AdminDashboard />,
     children: [
-      { path: "accounts", element: <AccountsManagement /> },
+      {
+        path: "accounts",
+        element: <AccountsManagement />,
+        children: [
+          { path: "new-requests", element: <AdminNewAccountRequests /> },
+          // { path: "loan-requests", element: <LoanRequests /> },
+          // { path: "transactions", element: <AccountsTransactionHistory /> },
+          // { path: "active", element: <ActiveAccounts /> },
+          // { path: "closed", element: <ClosedAccounts /> },
+          // { path: "reports", element: <AccountReports /> },
+          // { path: "alerts", element: <AccountAlerts /> },
+          // { path: "settings", element: <AccountSettings /> },
+        ],
+      },
+
       { path: "staff", element: <StaffManagement /> },
       { path: "loans", element: <LoanApproval /> },
-    ]
+    ],
   },
+
   {
     path: "/staff",
     element: <StaffDashboard />,

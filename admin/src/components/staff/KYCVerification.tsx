@@ -1,5 +1,6 @@
 import React from "react";
 
+
 const KYCVerification: React.FC = () => {
   return (
     <div>

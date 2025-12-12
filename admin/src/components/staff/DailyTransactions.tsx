@@ -12,4 +12,5 @@ const DailyTransactions: React.FC = () => {
   );
 };
 
-export default DailyTransactions;
+
+export default DailyTransactions;      

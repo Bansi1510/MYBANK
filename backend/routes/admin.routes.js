@@ -2,6 +2,7 @@ import express from "express";
 import { addStaff, deleteStaff, getAllAccountRequests, getAllStaff, updateStaff } from "../controllers/admin.controller.js";
 import { isAuthenticated } from "../middleware/isAutheticated.js";
 import { isAdmin } from "../middleware/isAdmin.js";
+
 const AdminRouter = express.Router();
 
 AdminRouter.post("/add-staff", isAuthenticated, isAdmin, addStaff);
