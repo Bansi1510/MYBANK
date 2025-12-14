@@ -26,7 +26,25 @@ export const newAccReqHistory = async (req, res) => {
     })
 
   } catch (error) {
-    res.status(500).json({ status: false, error: err.message });
+    res.status(500).json({ status: false, error: error.message });
+  }
+}
+
+export const allAcc = async (req, res) => {
+  try {
+
+    const { status } = req.query;
+    const rows = await sql`
+      SELECT a.name,a.mobile_number,a.aadhar_number,a.pan_number,b.account_number,b.account_type,b.status
+      FROM users a,accounts b 
+      WHERE a.id=b.user_id AND b.status=${status};
+      `
+    return res.status(200).json({
+      status: true,
+      data: rows
+    });
+  } catch (error) {
+    res.status(500).json({ status: false, error: error.message });
   }
 }
 export const chnageAccountStatus = async (req, res) => {
