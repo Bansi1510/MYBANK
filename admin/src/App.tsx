@@ -12,6 +12,7 @@ import KYCVerification from './components/staff/KYCVerification'
 import DailyTransactions from './components/staff/DailyTransactions'
 import NewBankAccountRequest from './components/staff/customer-account/NewBankAccountRequest'
 import AdminNewAccountRequests from './components/admin/account-management/AdminNewAccountRequests'
+import NewAccountRequestHistory from './components/admin/account-management/NewAccountRequestHistory'
 
 
 
@@ -29,6 +30,7 @@ const appRouter = createBrowserRouter([
         element: <AccountsManagement />,
         children: [
           { path: "new-requests", element: <AdminNewAccountRequests /> },
+          { path: "acc-req-history", element: <NewAccountRequestHistory /> }
           // { path: "loan-requests", element: <LoanRequests /> },
           // { path: "transactions", element: <AccountsTransactionHistory /> },
           // { path: "active", element: <ActiveAccounts /> },

@@ -3,6 +3,32 @@ import sendEmail from "../utils/sendEmail.js";
 import { generateAccountNumber } from "../utils/generateAccountNumber.js";
 import bcrypt from "bcrypt";
 
+
+export const newAccReqHistory = async (req, res) => {
+
+  try {
+    const adminId = req.id;
+
+    const rows = await sql`SELECT * FROM account_request_history WHERE decided_by=${adminId}`;
+
+    if (rows.length < 1) {
+      return res.status(200).json({
+        status: "true",
+        message: "no history",
+        data: []
+      })
+    }
+
+    return res.status(200).json({
+      status: true,
+      message: "Account History",
+      data: rows
+    })
+
+  } catch (error) {
+    res.status(500).json({ status: false, error: err.message });
+  }
+}
 export const chnageAccountStatus = async (req, res) => {
   try {
     const { requestId } = req.params;

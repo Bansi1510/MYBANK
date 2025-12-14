@@ -7,6 +7,7 @@ const AccountsManagement: React.FC = () => {
 
   const actions = [
     { title: "New Account Requests", desc: "View and approve new accounts", link: "new-requests" },
+    { title: "New Account Requests History", desc: "View approved and rejected  new account req", link: "acc-req-history" },
     { title: "Loan Requests", desc: "Check and approve loans", link: "loan-requests" },
     { title: "Transaction History", desc: "View all transactions", link: "transactions" },
     { title: "Active Accounts", desc: "Manage all active accounts", link: "active" },

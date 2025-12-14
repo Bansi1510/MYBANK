@@ -16,18 +16,18 @@ const AdminNewAccountRequests: React.FC = () => {
     fetchData();
   }, []);
 
-  useEffect(() => {
 
-    fetchData();
-  }, []);
-  const handleAction = async (id: number, action: "approved" | "rejected") => {
-    console.log(`Request ID: ${id}, Action: ${action}`);
+  const handleAction = async (
+    id: number,
+    action: "approved" | "rejected"
+  ) => {
     const res = await changeAccountStatusAPI(id, action);
 
     if (res) {
-      fetchData();
-    }
+      setRequests(prev => prev.filter(r => r.id !== id));
 
+      setTimeout(fetchData, 300);
+    }
   };
 
 
