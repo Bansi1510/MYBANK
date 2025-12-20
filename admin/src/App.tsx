@@ -14,6 +14,7 @@ import NewBankAccountRequest from './components/staff/customer-account/NewBankAc
 import AdminNewAccountRequests from './components/admin/account-management/AdminNewAccountRequests'
 import NewAccountRequestHistory from './components/admin/account-management/NewAccountRequestHistory'
 import AccountStatusView from './components/admin/account-management/AccountStatusView'
+import AccountDetails from './components/admin/account-management/AccountDetails'
 
 
 
