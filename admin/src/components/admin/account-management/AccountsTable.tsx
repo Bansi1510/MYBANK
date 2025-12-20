@@ -49,7 +49,7 @@ const AccountsTable: React.FC<Props> = ({ data, status }) => {
 
               <td className="px-4 py-3">
                 <Link
-                  to={`/accounts/${acc.account_number}`}
+                  to={`/${acc.status}/${acc.account_number}`}
                   className="text-blue-600 hover:underline"
                 >
                   {acc.account_number}
