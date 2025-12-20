@@ -32,6 +32,27 @@ export interface Account {
   status: AccountStatus;
 }
 
+export interface AccountDetails {
+  account_id: number;
+  account_number: string;
+  account_type: string
+  balance: string; 
+  status:string;
+  account_created_at: string;
+  user_id: number;
+  name: string;
+  email: string;
+  mobile_number: string;
+  address: string;
+  aadhar_number: string;
+  pan_number: string | null;
+  kyc_verified: boolean;
+  kyc_method: string | null;
+  kyc_document_url: string | null;
+  user_created_at: string;
+}
+
+
 export const changeAccountStatusAPI = async (req_no: number,action:string): Promise<boolean> => {
   try {
     const res = await API.put(`change-status/${req_no}`,{action});
@@ -86,4 +107,21 @@ export const getAccByStatus=async(status:string):Promise<Account[]|[]>=>{
     toast.error(msg);
     return [];
   }
+}
+
+export const getUserByAccNumber=async(accNumber:string):Promise<AccountDetails|null>=>{
+    try {
+      const res= await API.get(`${accNumber}`);
+
+      if(res.data.status){
+        return res.data.data;
+      }else{
+        return null;
+      }
+    } catch (error) {
+          const axiosErr = error as AxiosError<{ message?: string }>;
+    const msg = axiosErr.response?.data?.message || "Fetch Account Error";
+    toast.error(msg);
+    return null;
+    }
 }
