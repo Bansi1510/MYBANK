@@ -2,13 +2,36 @@ import bcrypt from "bcryptjs";
 import sql from "../utils/db.js";
 
 
-// 1) ADD STAFF
+
+
+const PASSWORD_REGEX =
+  /^(?=.*[a-z])(?=.*[A-Z])(?=.*\d)(?=.*[@$!%*?&])[A-Za-z\d@$!%*?&]{8,12}$/;
+
+const EMAIL_REGEX =
+  /^[a-zA-Z0-9._%+-]+@[a-zA-Z0-9.-]+\.[a-zA-Z]{2,}$/;
+
+
 export const addStaff = async (req, res) => {
   try {
     const { name, email, mobile_number, password, role } = req.body;
 
     if (!name || !email || !password || !role) {
-      return res.status(400).json({ message: "Required fields missing" });
+      return res.status(400).json({
+        message: "Name, email, password and role are required",
+      });
+    }
+
+    if (!EMAIL_REGEX.test(email)) {
+      return res.status(400).json({
+        message: "Invalid email format",
+      });
+    }
+
+    if (!PASSWORD_REGEX.test(password)) {
+      return res.status(400).json({
+        message:
+          "Password must be 8–12 characters and include uppercase, lowercase, number and special character",
+      });
     }
 
     const hashedPassword = await bcrypt.hash(password, 10);
@@ -20,13 +43,17 @@ export const addStaff = async (req, res) => {
     `;
 
     res.status(201).json({
+      status: true,
       message: "Staff added successfully",
-      staff: newStaff[0],
     });
   } catch (err) {
-    res.status(500).json({ message: "Server error", error: err.message });
+    console.log(err)
+    res.status(500).json({
+      message: err.message,
+    });
   }
 };
+
 
 // 2) UPDATE STAFF
 export const updateStaff = async (req, res) => {

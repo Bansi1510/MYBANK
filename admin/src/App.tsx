@@ -15,6 +15,7 @@ import AdminNewAccountRequests from './components/admin/account-management/Admin
 import NewAccountRequestHistory from './components/admin/account-management/NewAccountRequestHistory'
 import AccountStatusView from './components/admin/account-management/AccountStatusView'
 import AccountDetails from './components/admin/account-management/AccountDetails'
+import AddStaff from './components/admin/staff-management/AddStaff'
 
 
 
@@ -45,7 +46,15 @@ const appRouter = createBrowserRouter([
         ],
       },
 
-      { path: "staff", element: <StaffManagement /> },
+      {
+        path: "staff",
+        element: <StaffManagement />,
+        children: [
+          { path: "add", element: <AddStaff /> }
+        ]
+
+
+      },
       { path: "loans", element: <LoanApproval /> },
     ],
   },

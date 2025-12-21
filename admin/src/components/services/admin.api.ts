@@ -21,6 +21,14 @@ export interface AccountRequest {
   status: string;
   created_at: string;
 }
+export interface AddStaffData {
+  name: string;
+  email: string;
+  role: "staff";
+  mobile_number: string;
+  password: string;
+}
+
 
 API.defaults.withCredentials=true;
 
@@ -43,3 +51,24 @@ export const getAllNewAccountReq=async():Promise<AccountRequest[]|null>=>{
         return null;
       }
 };
+
+
+export const addStaffAPI=async(staffdata:AddStaffData):Promise<boolean>=>{
+  
+  try {
+      const res=await API.post("add-staff",staffdata);
+
+      if(res.data.status){
+        toast.success(res.data.message);
+        return true;
+      }else{
+        toast.error(res.data.message);
+        return false;
+      }
+  } catch (error: unknown) {
+        const axiosErr = error as AxiosError<{ message?: string }>;
+        const msg = axiosErr.response?.data?.message || "Add staff Error";
+        toast.error(msg);
+        return false;
+      }
+}
