@@ -16,6 +16,7 @@ import NewAccountRequestHistory from './components/admin/account-management/NewA
 import AccountStatusView from './components/admin/account-management/AccountStatusView'
 import AccountDetails from './components/admin/account-management/AccountDetails'
 import AddStaff from './components/admin/staff-management/AddStaff'
+import StaffTable from './components/admin/staff-management/StaffTable'
 
 
 
@@ -50,7 +51,8 @@ const appRouter = createBrowserRouter([
         path: "staff",
         element: <StaffManagement />,
         children: [
-          { path: "add", element: <AddStaff /> }
+          { path: "add", element: <AddStaff /> },
+          { path: "profiles", element: <StaffTable /> }
         ]
 
 

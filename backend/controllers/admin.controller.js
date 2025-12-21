@@ -73,11 +73,12 @@ export const updateStaff = async (req, res) => {
     }
 
     res.json({
+      status: true,
       message: "Staff updated successfully",
       staff: updated[0],
     });
   } catch (err) {
-    res.status(500).json({ message: "Server error", error: err.message });
+    res.status(500).json({ status: false, message: err.message });
   }
 };
 
@@ -97,10 +98,11 @@ export const deleteStaff = async (req, res) => {
     }
 
     res.json({
+      status: true,
       message: "Staff deleted successfully",
     });
   } catch (err) {
-    res.status(500).json({ message: "Server error", error: err.message });
+    res.status(500).json({ status: false, message: err.message });
   }
 };
 
@@ -114,11 +116,12 @@ export const getAllStaff = async (req, res) => {
     `;
 
     res.json({
+      status: true,
       message: "All staff fetched successfully",
       staff: staffList,
     });
   } catch (err) {
-    res.status(500).json({ message: "Server error", error: err.message });
+    res.status(500).json({ status: false, message: err.message });
   }
 };
 export const getAllAccountRequests = async (req, res) => {
