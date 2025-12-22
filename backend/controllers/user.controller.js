@@ -13,7 +13,7 @@ export const getUserProfile = async (req, res) => {
         u.email,
         u.mobile_number,
         u.address,
-         a.id AS account_id,
+       a.id AS account_id,
         a.account_number,
         a.account_type,
         a.balance,
