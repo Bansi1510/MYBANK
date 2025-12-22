@@ -1,10 +1,10 @@
-import { createSlice} from "@reduxjs/toolkit";
-import type { PayloadAction } from "@reduxjs/toolkit";
+import { createSlice,type PayloadAction } from "@reduxjs/toolkit";
+
 export interface Account {
   id: number;
   account_number: string;
   account_type: string;
-  balance: string;
+  balance: number; 
   status: string;
   created_at: string;
 }
@@ -25,7 +25,7 @@ const accountSlice = createSlice({
       state.account = action.payload;
     },
 
-    updateBalance(state, action: PayloadAction<string>) {
+    updateBalance(state, action: PayloadAction<number>) {
       if (state.account) {
         state.account.balance = action.payload;
       }
@@ -37,5 +37,7 @@ const accountSlice = createSlice({
   },
 });
 
-export const { setAccount, updateBalance, clearAccount } = accountSlice.actions;
+export const { setAccount, updateBalance, clearAccount } =
+  accountSlice.actions;
+
 export default accountSlice.reducer;

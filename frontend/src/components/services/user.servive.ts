@@ -12,7 +12,7 @@ export interface AccountAPIModel {
   id: number;
   account_number: string;
   account_type: string;
-  balance: string;
+  balance: number;
   status: string;
   created_at: string;
 }

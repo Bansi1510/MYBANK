@@ -1,20 +1,16 @@
-import React, { useEffect } from "react";
-
+import React from "react";
 import Navbar from "../shared/Navbar";
-import { useFetchAccountDetail } from "../hooks/useFetchAccountDetails";
 import AccountContainer from "../accounts/AccountContainer";
 import FeatureGrid from "../accounts/FeatureGrid";
 import Hero from "../accounts/Hero";
-
+import { useFetchAccountDetail } from "../hooks/useFetchAccountDetails";
 
 export const Accounts: React.FC = () => {
+  const { data, loading, error } = useFetchAccountDetail();
 
-  const { data, loading, error, refetch } = useFetchAccountDetail();
-  useEffect(() => {
-    refetch();
-  }, []);
   if (loading) return <p>Loading account details...</p>;
   if (error) return <p style={{ color: "red" }}>{error}</p>;
+
   return (
     <>
       <Navbar />

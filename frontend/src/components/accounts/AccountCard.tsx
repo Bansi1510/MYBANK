@@ -11,7 +11,7 @@ interface Props {
     email: string;
     mobile_number: string;
     address: string;
-    balance: string;
+    balance: number;
     created_at: string;
   };
 }

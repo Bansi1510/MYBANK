@@ -59,7 +59,7 @@ export const MobileUpiAPI = async (
       "/transfer-mobile",
       { senderAccountNumber, recipientMobile, amount }
     );
-
+    console.log(res.data);
     if (res.data.status) {
       toast.success(res.data.message);
       return res.data;

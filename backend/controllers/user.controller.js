@@ -41,7 +41,7 @@ export const getUserProfile = async (req, res) => {
         id: acc.account_id,
         account_number: acc.account_number,
         account_type: acc.account_type,
-        balance: acc.balance,
+        balance: Number(acc.balance),
         status: acc.account_status,
         created_at: acc.account_created_at
       } : null).filter(Boolean)
