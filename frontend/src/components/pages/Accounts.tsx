@@ -11,11 +11,12 @@ export const Accounts: React.FC = () => {
   if (loading) return <p>Loading account details...</p>;
   if (error) return <p style={{ color: "red" }}>{error}</p>;
 
+
   return (
     <>
       <Navbar />
       <div className="w-full mt-18 p-6 space-y-10 bg-gray-50 min-h-screen">
-        <Hero />
+        <Hero balance={data?.balance} />
         <AccountContainer account={data} />
         <FeatureGrid />
       </div>

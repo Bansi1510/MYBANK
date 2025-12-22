@@ -34,10 +34,11 @@ export const useFetchAccountDetail = () => {
   }, [dispatch]);
 
   useEffect(() => {
-    if (!account) {
+    if (user && !account) {
       fetchData();
     }
-  }, [account, fetchData]);
+  }, [user, account, fetchData]);
+
 
   const combined =
     account && user
@@ -54,6 +55,6 @@ export const useFetchAccountDetail = () => {
     data: combined,
     loading,
     error,
-    refetch: fetchData, // manual only
+    refetch: fetchData,
   };
 };

@@ -114,8 +114,8 @@ const Profile: React.FC = () => {
                 <td className="py-3 px-2">
                   <span
                     className={`px-3 py-1 rounded-full text-sm ${acc.status === "active"
-                        ? "bg-green-100 text-green-700"
-                        : "bg-gray-200 text-gray-600"
+                      ? "bg-green-100 text-green-700"
+                      : "bg-gray-200 text-gray-600"
                       }`}
                   >
                     {acc.status}

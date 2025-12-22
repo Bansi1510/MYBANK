@@ -4,6 +4,7 @@ import { Link } from "react-router-dom";
 import type { RootState } from "../redux/store";
 import { LogoutAPI } from "../services/auth.service";
 import { clearAuth } from "../redux/slices/authSlice";
+import { clearAccount } from "../redux/slices/accountSlice";
 
 const Navbar: React.FC = () => {
   const [open, setOpen] = useState(false);
@@ -11,7 +12,10 @@ const Navbar: React.FC = () => {
   const dispatch = useDispatch();
   const handleLogout = async () => {
     const res = await LogoutAPI();
-    if (res) dispatch(clearAuth());
+    if (res) {
+      dispatch(clearAuth());
+      dispatch(clearAccount());
+    }
   };
 
   return (
