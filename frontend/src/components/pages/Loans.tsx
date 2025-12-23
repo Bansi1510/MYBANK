@@ -1,22 +1,29 @@
 import React from "react";
-import LoanHeader from "../Loans/LoanHeader";
-import LoanFeatures from "../Loans/LoanFeatures";
-import LoanCategoryGrid from "../Loans/LoanCategoryGrid";
-import LoanSteps from "../Loans/LoanSteps";
-import LoanHelp from "../Loans/LoanHelp";
 import Navbar from "../shared/Navbar";
+import LoanHeader from "../Loans/LoanHeader";
+import LoanCategoryGrid from "../Loans/LoanCategoryGrid";
+import LoanHelp from "../Loans/LoanHelp";
 
 const Loans: React.FC = () => {
   return (
     <>
       <Navbar />
+
       <div className="w-full mt-18 min-h-screen bg-gray-50 p-6">
-        <div className="max-w-6xl mx-auto space-y-10">
+        <div className="max-w-5xl mx-auto space-y-8">
+
+          {/* Page Title / Trust Section */}
           <LoanHeader />
-          <LoanFeatures />
+
+          {/* Select Loan Type */}
           <LoanCategoryGrid />
-          <LoanSteps />
+
+          {/* Loan Application Form (NEXT STEP) */}
+          {/* 👉 This is where form should come */}
+
+          {/* Support & Contact */}
           <LoanHelp />
+
         </div>
       </div>
     </>

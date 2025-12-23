@@ -7,7 +7,7 @@ import { useSelector, useDispatch } from "react-redux";
 import type { RootState } from "../../redux/store";
 import { MobileUpiAPI } from "../../services/transaction.service";
 import { useNavigate } from "react-router-dom";
-import { updateBalance } from "../../redux/slices/accountSlice";
+import { updateAccountBalance } from "../../redux/slices/authSlice";
 
 const MobileUPI: React.FC = () => {
   const [mobile, setMobile] = useState("");
@@ -17,7 +17,10 @@ const MobileUPI: React.FC = () => {
   const dispatch = useDispatch();
   const navigate = useNavigate();
 
-  const account = useSelector((state: RootState) => state.account.account);
+  // ✅ Fetch account directly from Redux
+  const account = useSelector(
+    (state: RootState) => state.auth.profile?.accounts?.[0]
+  );
 
   const mobileUPIHandler = async () => {
     if (!account) {
@@ -25,23 +28,25 @@ const MobileUPI: React.FC = () => {
       return;
     }
 
+    if (!mobile || !amount) {
+      alert("Please fill mobile number and amount.");
+      return;
+    }
+
     try {
-      const res = await MobileUpiAPI(
-        account.account_number,
-        mobile,
-        amount
-      );
+      const res = await MobileUpiAPI(account.account_number, mobile, amount);
 
       if (res?.status) {
-        // ✅ CALCULATE NEW BALANCE LOCALLY
-        const debitAmount = Number(res.transaction.amount);
-        const newBalance = account.balance - debitAmount;
+        // ✅ Update balance in Redux after successful transaction
+        const newBalance = account.balance - Number(amount);
+        dispatch(updateAccountBalance({ accountId: account.id, newBalance }));
 
-        dispatch(updateBalance(newBalance));
-
+        // ✅ Navigate to success page with transaction details
         navigate("/upi-success", {
           state: res.transaction,
         });
+      } else {
+        alert(res?.message || "Transaction failed.");
       }
     } catch (err) {
       console.error("UPI transaction failed", err);
