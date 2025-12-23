@@ -4,16 +4,14 @@ import storage from 'redux-persist/lib/storage';
 import { combineReducers } from 'redux';
 
 import authSlice from './slices/authSlice'; 
-import accountSlice from "./slices/accountSlice"
-const persistConfig = {
+ const persistConfig = {
   key: 'root',
   storage,
 };
 
 const rootReducer = combineReducers({
   auth: authSlice,
-  account:accountSlice,
-});
+ });
 
 const persistedReducer = persistReducer(persistConfig, rootReducer);
 

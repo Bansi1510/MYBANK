@@ -1,7 +1,9 @@
 import { useState } from "react";
 import { Login_API, OtpSendAPI, VerifyOtpAPI } from "../services/auth.service";
 import { useDispatch } from "react-redux";
-import { setUserId } from "../redux/slices/authSlice";
+import { setAuth } from "../redux/slices/authSlice";
+import { getProfileAPI } from "../services/user.servive";
+
 import { useNavigate } from "react-router-dom";
 
 const Login: React.FC = () => {
@@ -43,18 +45,27 @@ const Login: React.FC = () => {
       setError("OTP is required");
       return;
     }
-    const normalizedMobile: string = mobile.startsWith("+91")
+
+    const normalizedMobile = mobile.startsWith("+91")
       ? mobile
       : "+91" + mobile;
-    setError("");
-    const user = await VerifyOtpAPI(normalizedMobile, accountNumber, otp);
 
-    if (user) {
-      dispatch(setUserId(user));
-      navigate("/")
+    setError("");
+
+    const verified = await VerifyOtpAPI(normalizedMobile, accountNumber, otp);
+
+    if (!verified) {
+      setError("OTP verification failed");
+      return;
     }
 
-    console.log("Call verifyOTP API:", { mobile, otp });
+    // 🔥 FETCH FULL USER + ACCOUNT DATA ONCE
+    const profile = await getProfileAPI();
+
+    if (profile) {
+      dispatch(setAuth(profile));
+      navigate("/");
+    }
   };
 
   return (

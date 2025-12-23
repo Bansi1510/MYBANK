@@ -1,27 +1,14 @@
-import React, { useEffect } from "react";
-import { useDispatch, useSelector } from "react-redux";
+import React from "react";
+import { useSelector } from "react-redux";
 import { User2, Mail, Phone, MapPin } from "lucide-react";
 
 import type { RootState } from "../redux/store";
-import { getProfileAPI } from "../services/user.servive";
-import { setUserProfile } from "../redux/slices/authSlice";
+
 
 const Profile: React.FC = () => {
-  const dispatch = useDispatch();
-
-  const userId = useSelector((state: RootState) => state.auth.userId);
   const user = useSelector((state: RootState) => state.auth.profile);
 
-  useEffect(() => {
-    if (!userId) return;
 
-    const fetchProfile = async () => {
-      const profileData = await getProfileAPI();
-      dispatch(setUserProfile(profileData));
-    };
-
-    fetchProfile();
-  }, [userId, dispatch]);
 
   if (!user)
     return (

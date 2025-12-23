@@ -1,36 +1,36 @@
 import React from "react";
+import { useSelector } from "react-redux";
+import type { RootState } from "../redux/store";
 import AccountCard from "./AccountCard";
 import TransactionCard from "./TransactionCard";
 
-interface Account {
-  id: number;
-  account_number: string;
-  account_type: string;
-  status: string;
-  name: string;
-  email: string;
-  mobile_number: string;
-  address: string;
-  balance: number;
-  created_at: string;
-}
+const AccountContainer: React.FC = () => {
+  const profile = useSelector((state: RootState) => state.auth.profile);
 
-interface Props {
-  account: Account | null;
-}
+  if (!profile || profile.accounts.length === 0) {
+    return <p>No account available</p>;
+  }
 
-const AccountContainer: React.FC<Props> = ({ account }) => {
-  if (!account) return <p>No account available</p>;
+  const account = profile.accounts[0]; // first account (for now)
+
+  const mergedAccount = {
+    ...account,
+    name: profile.name,
+    email: profile.email,
+    mobile_number: profile.mobile_number,
+    address: profile.address,
+  };
+
   return (
     <section className="space-y-4">
       <h2 className="text-2xl font-semibold text-gray-800">Your Account</h2>
 
       <div className="grid md:grid-cols-2 lg:grid-cols-2 gap-6">
-
-        <AccountCard key={account.id} account={account} />
+        <AccountCard key={mergedAccount.id} account={mergedAccount} />
         <TransactionCard />
       </div>
     </section>
   );
 };
+
 export default AccountContainer;

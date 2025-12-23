@@ -12,7 +12,6 @@ interface Props {
     mobile_number: string;
     address: string;
     balance: number;
-    created_at: string;
   };
 }
 
@@ -45,7 +44,6 @@ const AccountCard: React.FC<Props> = ({ account }) => {
         </p>
 
         <p><strong>Balance:</strong> ₹ {account.balance}</p>
-        <p><strong>Created At:</strong> {new Date(account.created_at).toLocaleDateString()}</p>
       </div>
     </div>
   );

@@ -2,12 +2,9 @@ import React from "react";
 import { FaShieldAlt, FaBalanceScale, FaInfoCircle } from "react-icons/fa";
 
 
-interface Props {
-  balance: number | undefined
-}
 
-const Hero: React.FC<Props> = ({ balance }) => {
-  console.log(balance)
+
+const Hero: React.FC = () => {
   return (
     <div className="w-full bg-white shadow rounded-xl p-8 border">
       <h1 className="text-3xl font-bold text-gray-800 mb-6">

@@ -1,6 +1,12 @@
-import  { createSlice } from "@reduxjs/toolkit";
-import type{PayloadAction} from "@reduxjs/toolkit";
- 
+import { createSlice, type PayloadAction } from "@reduxjs/toolkit";
+
+export interface Account {
+  id: number;
+  account_number: string;
+  account_type: string;
+  balance: number;
+  status: string;
+ }
 
 export interface UserProfile {
   id: number;
@@ -8,18 +14,17 @@ export interface UserProfile {
   email: string;
   mobile_number: string;
   address: string;
-  aadhar_number?: string;
-  kyc_verified?: boolean;
   created_at?: string;
+  accounts: Account[];
 }
 
 interface AuthState {
-  userId: number | null;
+  isAuthenticated: boolean;
   profile: UserProfile | null;
 }
 
 const initialState: AuthState = {
-  userId: null,
+  isAuthenticated: false,
   profile: null,
 };
 
@@ -27,21 +32,29 @@ const authSlice = createSlice({
   name: "auth",
   initialState,
   reducers: {
-    setUserId(state, action: PayloadAction<number>) {
-      state.userId = action.payload;
-    },
-
-    setUserProfile(state, action: PayloadAction<UserProfile | null>) {
+     setAuth(state, action: PayloadAction<UserProfile>) {
+      state.isAuthenticated = true;
       state.profile = action.payload;
     },
 
-    clearAuth(state) {
-      state.userId = null;
+     clearAuth(state) {
+      state.isAuthenticated = false;
       state.profile = null;
+    },
+
+     updateAccountBalance(
+      state,
+      action: PayloadAction<{ accountId: number; newBalance: number }>
+    ) {
+      const account = state.profile?.accounts.find(
+        (acc) => acc.id === action.payload.accountId
+      );
+      if (account) {
+        account.balance = action.payload.newBalance;
+      }
     },
   },
 });
 
-export const { setUserId, setUserProfile, clearAuth } = authSlice.actions;
-
+export const { setAuth, clearAuth, updateAccountBalance } = authSlice.actions;
 export default authSlice.reducer;

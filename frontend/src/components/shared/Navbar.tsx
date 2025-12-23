@@ -4,17 +4,16 @@ import { Link } from "react-router-dom";
 import type { RootState } from "../redux/store";
 import { LogoutAPI } from "../services/auth.service";
 import { clearAuth } from "../redux/slices/authSlice";
-import { clearAccount } from "../redux/slices/accountSlice";
 
 const Navbar: React.FC = () => {
   const [open, setOpen] = useState(false);
-  const user = useSelector((store: RootState) => store.auth.userId);
+  const loggedIn = useSelector((store: RootState) => store.auth.isAuthenticated);
   const dispatch = useDispatch();
   const handleLogout = async () => {
     const res = await LogoutAPI();
     if (res) {
       dispatch(clearAuth());
-      dispatch(clearAccount());
+
     }
   };
 
@@ -42,7 +41,7 @@ const Navbar: React.FC = () => {
 
         {/* RIGHT SIDE BUTTON */}
         <div className="hidden md:flex items-center space-x-6">
-          {!user ? (
+          {!loggedIn ? (
             <Link to="/login">
               <button className="px-5 py-2 rounded-xl font-semibold 
                 text-blue-600 border border-blue-600 
@@ -104,7 +103,7 @@ const Navbar: React.FC = () => {
           <Link className="block text-lg font-medium hover:text-blue-600" to="#">Loans</Link>
           <Link className="block text-lg font-medium hover:text-blue-600" to="#">Contact</Link>
 
-          {!user ? (
+          {!loggedIn ? (
             <Link to="/login">
               <button
                 onClick={() => setOpen(false)}
