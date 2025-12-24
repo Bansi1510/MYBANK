@@ -92,3 +92,47 @@ export const applyLoan = async (req, res) => {
     });
   }
 };
+
+
+export const getLoanReq = async (req, res) => {
+  try {
+    const loans = await sql`
+      SELECT
+        lr.id AS loan_id,
+        lr.loan_type,
+        lr.loan_amount,
+        lr.tenure,
+        lr.status AS loan_status,
+        lr.created_at AS loan_created_at,
+
+        u.id AS user_id,
+        u.name AS user_name,
+        u.email,
+        u.mobile_number,
+
+        a.id AS account_id,
+        a.account_number,
+        a.account_type,
+        a.balance,
+        a.status AS account_status
+
+      FROM loan_req lr
+      INNER JOIN users u ON lr.user_id = u.id
+      LEFT JOIN accounts a ON a.user_id = u.id
+      ORDER BY lr.created_at DESC
+    `;
+
+    return res.status(200).json({
+      success: true,
+      message: "Loan requests fetched successfully",
+      data: loans,
+    });
+  } catch (error) {
+    console.error("Get Loan Request Error:", error);
+    return res.status(500).json({
+      success: false,
+      message: "Server error",
+    });
+  }
+};
+
