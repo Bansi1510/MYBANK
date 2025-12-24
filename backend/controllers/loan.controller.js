@@ -215,12 +215,7 @@ MYBANK`
     }
 
     if (role === "admin" && action === "approve") {
-      if (!interest_rate) {
-        return res.status(400).json({
-          success: false,
-          message: "Interest rate is required",
-        });
-      }
+
 
       await sql`
         INSERT INTO loans (
@@ -239,7 +234,7 @@ MYBANK`
           ${loanReq.user_id},
           ${loanReq.account_number},
           ${loanReq.loan_type},
-          ${interest_rate},
+          ${interest_rate || 10},
           'approved',
           ${adminId},
           NOW(),
@@ -287,4 +282,237 @@ MYBANK`
   }
 };
 
+export const loanDetails = async (req, res) => {
+  try {
+    const userId = req.id;
+    const role = req.role;
+    const { loanId } = req.params;
+
+    let result;
+
+    if (role === "user") {
+      if (loanId) {
+        result = await sql`
+          SELECT
+            u.id AS user_id,
+            u.name,
+            u.email,
+            a.account_number,
+            a.account_type,
+            a.balance,
+
+            l.id AS loan_id,
+            l.loan_type,
+            l.loan_amount,
+            l.tenure,
+            l.status,
+            l.created_at
+
+          FROM loans l
+          JOIN users u ON u.id = l.user_id
+          LEFT JOIN accounts a ON a.user_id = u.id
+          WHERE l.user_id = ${userId}
+          AND l.id = ${loanId}
+          ORDER BY l.created_at DESC
+        `;
+      } else {
+        result = await sql`
+          SELECT
+            u.id AS user_id,
+            u.name,
+            u.email,
+            a.account_number,
+            a.account_type,
+            a.balance,
+
+            l.id AS loan_id,
+            l.loan_type,
+            l.loan_amount,
+            l.tenure,
+            l.status,
+            l.created_at
+
+          FROM loans l
+          JOIN users u ON u.id = l.user_id
+          LEFT JOIN accounts a ON a.user_id = u.id
+          WHERE l.user_id = ${userId}
+          ORDER BY l.created_at DESC
+        `;
+      }
+    } else {
+      if (loanId) {
+        result = await sql`
+          SELECT
+            u.id AS user_id,
+            u.name,
+            u.email,
+            a.account_number,
+            a.account_type,
+            a.balance,
+
+            l.id AS loan_id,
+            l.loan_type,
+            l.loan_amount,
+            l.tenure,
+            l.status,
+            l.created_at
+
+          FROM loans l
+          JOIN users u ON u.id = l.user_id
+          LEFT JOIN accounts a ON a.user_id = u.id
+          WHERE l.id = ${loanId}
+          ORDER BY l.created_at DESC
+        `;
+      } else {
+        result = await sql`
+          SELECT
+            u.id AS user_id,
+            u.name,
+            u.email,
+            a.account_number,
+            a.account_type,
+            a.balance,
+
+            l.id AS loan_id,
+            l.loan_type,
+            l.loan_amount,
+            l.tenure,
+            l.status,
+            l.created_at
+
+          FROM loans l
+          JOIN users u ON u.id = l.user_id
+          LEFT JOIN accounts a ON a.user_id = u.id
+          ORDER BY l.created_at DESC
+        `;
+      }
+    }
+
+    if (result.length === 0) {
+      return res.status(404).json({
+        success: false,
+        message: "No loan data found",
+      });
+    }
+
+    return res.status(200).json({
+      success: true,
+      data: result,
+    });
+  } catch (error) {
+    console.error("Loan Details Error:", error);
+    return res.status(500).json({
+      success: false,
+      message: "Server error",
+    });
+  }
+};
+
+
+export const getLoanPaymentDetails = async (req, res) => {
+  try {
+    const userId = req.id;
+    const role = req.role;
+    const { loanId } = req.params;
+
+    if (!loanId) {
+      return res.status(400).json({
+        success: false,
+        message: "Loan ID is required",
+      });
+    }
+
+    // Fetch loan info and summary
+    let loanQuery = await sql`
+      SELECT
+        l.id AS loan_id,
+        l.user_id,
+        l.loan_type,
+        l.loan_amount,
+        l.interest_rate,
+        l.tenure,
+        l.status,
+        l.created_at,
+        COALESCE(SUM(lp.amount), 0) AS total_paid,
+        COUNT(lp.id) AS paid_emis,
+        u.name,
+        u.email,
+        a.account_number,
+        a.account_type,
+        a.balance
+      FROM loans l
+      JOIN users u ON u.id = l.user_id
+      LEFT JOIN accounts a ON a.user_id = u.id
+      LEFT JOIN loan_payments lp ON lp.loan_id = l.id
+      WHERE l.id = ${loanId}
+      ${role === "user" ? sql`AND l.user_id = ${userId}` : sql``}
+      GROUP BY l.id, u.id, a.id
+    `;
+
+    if (loanQuery.length === 0) {
+      return res.status(404).json({
+        success: false,
+        message: "Loan not found or you are not authorized",
+      });
+    }
+
+    const loan = loanQuery[0];
+
+    // Convert numeric strings to numbers for calculations
+    const loanAmount = Number(loan.loan_amount);
+    const totalPaid = Number(loan.total_paid);
+    const interestRate = Number(loan.interest_rate);
+
+    const total_interest = (loanAmount * interestRate * loan.tenure) / 100;
+    const total_payable = loanAmount + total_interest;
+    const monthly_emi = total_payable / loan.tenure;
+    const remaining_amount = total_payable - totalPaid;
+    const remaining_tenure = loan.tenure - loan.paid_emis;
+
+    // Fetch all EMI payments for this loan
+    const payments = await sql`
+      SELECT
+        id AS payment_id,
+        amount,
+        principal_component,
+        interest_component,
+        remaining_balance,
+        payment_date,
+        payment_method
+      FROM loan_payments
+      WHERE loan_id = ${loanId}
+      ORDER BY payment_date ASC
+    `;
+
+    // Return combined response
+    return res.status(200).json({
+      success: true,
+      data: {
+        loan_summary: {
+          loan_id: loan.loan_id,
+          loan_type: loan.loan_type,
+          loan_amount: loanAmount,
+          interest_rate: interestRate,
+          tenure: loan.tenure,
+          total_interest: Number(total_interest.toFixed(2)),
+          total_payable: Number(total_payable.toFixed(2)),
+          monthly_emi: Number(monthly_emi.toFixed(2)),
+          total_paid: Number(totalPaid.toFixed(2)),
+          remaining_amount: Number(remaining_amount.toFixed(2)),
+          paid_emis: Number(loan.paid_emis),
+          remaining_tenure,
+          status: loan.status,
+        },
+        payments
+      }
+    });
+
+  } catch (error) {
+    console.error("Get Loan Payment Details Error:", error);
+    return res.status(500).json({
+      success: false,
+      message: "Server error",
+    });
+  }
+};
 
