@@ -2,7 +2,7 @@ import { useState } from "react";
 import { Login_API, OtpSendAPI, VerifyOtpAPI } from "../services/auth.service";
 import { useDispatch } from "react-redux";
 import { setAuth } from "../redux/slices/authSlice";
-import { getProfileAPI } from "../services/user.servive";
+import { getProfileAPI } from "../services/user.service";
 
 import { useNavigate } from "react-router-dom";
 

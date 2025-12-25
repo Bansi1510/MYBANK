@@ -19,6 +19,7 @@ import MobileRecharge from "./components/services_page/utility/MobileRecharge";
 import InsurancePremium from "./components/services_page/utility/InsurancePremium";
 import UpiSuccess from "./components/services_page/upi/UpiSuccess";
 import Loans from "./components/pages/Loans";
+import LoanApplicationPage from "./components/Loans/LoanApplicationPage";
 
 const appRouter = createBrowserRouter([
   {
@@ -95,8 +96,12 @@ const appRouter = createBrowserRouter([
   {
     path: "/services/utility/insurance",
     element: <InsurancePremium />
+  },
+  //loan
+  {
+    path: "/loan/:loanType",
+    element: <LoanApplicationPage />
   }
-
 ]);
 
 
