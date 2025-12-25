@@ -12,7 +12,7 @@ export const applyLoan = async (req, res) => {
     if (!loan_type || !loan_amount || !tenure) {
       return res.status(400).json({
         message: "All fields are required",
-        success: false,
+        status: false,
       });
     }
 
@@ -30,7 +30,7 @@ export const applyLoan = async (req, res) => {
     if (!allowedLoanTypes.includes(loan_type)) {
       return res.status(400).json({
         message: "Invalid loan type",
-        success: false,
+        status: false,
       });
     }
 
@@ -81,14 +81,14 @@ export const applyLoan = async (req, res) => {
 
     res.status(201).json({
       message: "Loan request submitted successfully",
-      success: true,
+      status: true,
       loanRequest: result[0],
     });
   } catch (error) {
     console.error(error);
     res.status(500).json({
       message: "Server error",
-      success: false,
+      status: false,
     });
   }
 };
@@ -151,7 +151,7 @@ export const updateLoanStatus = async (req, res) => {
 
     if (loan.length === 0) {
       return res.status(404).json({
-        success: false,
+        status: false,
         message: "Loan request not found",
       });
     }
@@ -182,7 +182,7 @@ MYBANK`
       );
 
       return res.status(200).json({
-        success: true,
+        status: true,
         message: "Loan rejected successfully",
       });
     }
@@ -209,7 +209,7 @@ MYBANK`
       );
 
       return res.status(200).json({
-        success: true,
+        status: true,
         message: "Loan moved to under process",
       });
     }
@@ -303,7 +303,7 @@ MYBANK`
         );
 
         return res.status(200).json({
-          success: true,
+          status: true,
           message: "Loan approved and amount credited successfully",
         });
 
@@ -315,7 +315,7 @@ MYBANK`
         console.error("Loan Approval Failed:", error);
 
         return res.status(500).json({
-          success: false,
+          status: false,
           message: "Loan approval failed, transaction rolled back",
         });
       }
@@ -324,13 +324,13 @@ MYBANK`
 
 
     return res.status(400).json({
-      success: false,
+      status: false,
       message: "Invalid action or role",
     });
   } catch (error) {
     console.error("Loan Status Error:", error);
     return res.status(500).json({
-      success: false,
+      status: false,
       message: "Server error",
     });
   }
@@ -444,19 +444,19 @@ export const loanDetails = async (req, res) => {
 
     if (result.length === 0) {
       return res.status(404).json({
-        success: false,
+        status: false,
         message: "No loan data found",
       });
     }
 
     return res.status(200).json({
-      success: true,
+      status: true,
       data: result,
     });
   } catch (error) {
     console.error("Loan Details Error:", error);
     return res.status(500).json({
-      success: false,
+      status: false,
       message: "Server error",
     });
   }
@@ -471,7 +471,7 @@ export const getLoanPaymentDetails = async (req, res) => {
 
     if (!loanId) {
       return res.status(400).json({
-        success: false,
+        status: false,
         message: "Loan ID is required",
       });
     }
@@ -507,7 +507,7 @@ export const getLoanPaymentDetails = async (req, res) => {
 
     if (loanResult.length === 0) {
       return res.status(404).json({
-        success: false,
+        status: false,
         message: "Loan not found or unauthorized",
       });
     }
@@ -546,7 +546,7 @@ export const getLoanPaymentDetails = async (req, res) => {
     `;
 
     return res.status(200).json({
-      success: true,
+      status: true,
       data: {
         loan_summary: {
           loan_id: loan.loan_id,
@@ -577,7 +577,7 @@ export const getLoanPaymentDetails = async (req, res) => {
   } catch (error) {
     console.error("Get Loan Payment Details Error:", error);
     return res.status(500).json({
-      success: false,
+      status: false,
       message: "Server error",
     });
   }
@@ -593,7 +593,7 @@ export const loanPayment = async (req, res) => {
     const { loan_id } = req.params;
     if (!loan_id || !amount || amount <= 0) {
       return res.status(400).json({
-        success: false,
+        status: false,
         message: "Loan ID and valid amount are required",
       });
     }
@@ -609,7 +609,7 @@ export const loanPayment = async (req, res) => {
 
     if (loanRows.length === 0) {
       return res.status(404).json({
-        success: false,
+        status: false,
         message: "Loan not found",
       });
     }
@@ -618,7 +618,7 @@ export const loanPayment = async (req, res) => {
 
     if (loan.status !== "approved") {
       return res.status(400).json({
-        success: false,
+        status: false,
         message: "Loan is not active",
       });
     }
@@ -626,14 +626,14 @@ export const loanPayment = async (req, res) => {
     // User can pay only own loan
     if (role === "user" && loan.user_id !== payerId) {
       return res.status(403).json({
-        success: false,
+        status: false,
         message: "You can pay only your own loan",
       });
     }
 
     if (amount > loan.loan_amount) {
       return res.status(400).json({
-        success: false,
+        status: false,
         message: "Amount exceeds remaining loan balance",
       });
     }
@@ -649,7 +649,7 @@ export const loanPayment = async (req, res) => {
 
     if (accountRows.length === 0) {
       return res.status(404).json({
-        success: false,
+        status: false,
         message: "Loan owner account not found",
       });
     }
@@ -659,7 +659,7 @@ export const loanPayment = async (req, res) => {
     // If NOT cash → check balance
     if (payment_method !== "cash" && account.balance < amount) {
       return res.status(400).json({
-        success: false,
+        status: false,
         message: "Insufficient balance in user's account",
       });
     }
@@ -711,7 +711,7 @@ export const loanPayment = async (req, res) => {
     ]);
 
     return res.status(200).json({
-      success: true,
+      status: true,
       message:
         role === "user"
           ? "Loan payment successful"
@@ -727,7 +727,7 @@ export const loanPayment = async (req, res) => {
     console.error("Loan Payment Error:", error);
 
     return res.status(500).json({
-      success: false,
+      status: false,
       message: "Loan payment failed",
     });
   }

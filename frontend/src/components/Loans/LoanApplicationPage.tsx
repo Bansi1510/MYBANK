@@ -5,6 +5,7 @@ import {
   LOAN_SPECIFIC_DOCUMENTS,
 } from "../config/loanDocuments.config";
 import Navbar from "../shared/Navbar";
+import { applyLoanAPI } from "../services/loan.service";
 
 const LoanApplicationPage: React.FC = () => {
   const { loanType } = useParams<{ loanType: string }>();
@@ -44,6 +45,25 @@ const LoanApplicationPage: React.FC = () => {
     ...COMMON_DOCUMENTS,
     ...(LOAN_SPECIFIC_DOCUMENTS[loanType] || []),
   ];
+  const handleSubmit = async () => {
+    const formData: FormData = new FormData();
+
+    formData.append("loan_type", loanType.split("-")[0]);
+    formData.append("loan_amount", form.amount);
+    formData.append("tenure", form.tenure);
+
+    Object.entries(documents).forEach(([key, files]) => {
+      files.forEach(file => {
+        formData.append(key, file);
+      });
+    });
+
+    const res = await applyLoanAPI(formData);
+
+    if (res) {
+      navigate("/");
+    }
+  };
 
   return (
     <>    <Navbar />
@@ -172,16 +192,14 @@ const LoanApplicationPage: React.FC = () => {
               Cancel
             </button>
             <button
-              onClick={() =>
-                console.log({ loanType, form, documents })
-              }
+              onClick={handleSubmit}
               className="bg-blue-900 text-white px-6 py-2 text-sm"
             >
               Submit Application
             </button>
           </div>
         </div>
-      </div>
+      </div >
     </>
   );
 };
