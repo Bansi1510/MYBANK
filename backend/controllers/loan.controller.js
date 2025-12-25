@@ -732,8 +732,3 @@ export const loanPayment = async (req, res) => {
     });
   }
 };
-
-
-
-
-
