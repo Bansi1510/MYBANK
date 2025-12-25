@@ -215,59 +215,113 @@ MYBANK`
     }
 
     if (role === "admin" && action === "approve") {
+      try {
+        // 🔹 Start transaction
+        await sql`BEGIN`;
 
+        // 🔹 Create savepoint
+        await sql`SAVEPOINT loan_approve`;
 
-      await sql`
-        INSERT INTO loans (
-          user_id,
-          account_number,
-          loan_type,
-          interest_rate,
-          status,
-          approved_by,
-          approved_at,
-          loan_amount,
-          tenure,
-          documents,
-          loan_req_id
-        ) VALUES (
-          ${loanReq.user_id},
-          ${loanReq.account_number},
-          ${loanReq.loan_type},
-          ${interest_rate || 10},
-          'approved',
-          ${adminId},
-          NOW(),
-          ${loanReq.loan_amount},
-          ${loanReq.tenure},
-          ${loanReq.documents},
-          ${loanReq.id}
-        )
-      `;
+        // 1️⃣ Insert into loans table
+        const loanResult = await sql`
+      INSERT INTO loans (
+        user_id,
+        account_number,
+        loan_type,
+        interest_rate,
+        status,
+        approved_by,
+        approved_at,
+        loan_amount,
+        tenure,
+        documents,
+        loan_req_id
+      ) VALUES (
+        ${loanReq.user_id},
+        ${loanReq.account_number},
+        ${loanReq.loan_type},
+        ${interest_rate || 10},
+        'approved',
+        ${adminId},
+        NOW(),
+        ${loanReq.loan_amount},
+        ${loanReq.tenure},
+        ${loanReq.documents},
+        ${loanReq.id}
+      )
+      RETURNING id
+    `;
 
-      await sql`
-        DELETE FROM loan_req
-        WHERE id = ${loan_id}
-      `;
+        const loanId = loanResult[0].id;
 
-      await sendEmail(
-        loanReq.email,
-        "Loan Approved",
-        `Dear ${loanReq.name},
+        // 2️⃣ Credit loan amount to account
+        await sql`
+      UPDATE accounts
+      SET balance = balance + ${loanReq.loan_amount}
+      WHERE account_number = ${loanReq.account_number}
+    `;
 
-Your loan has been approved.
+        // 3️⃣ Insert transaction history
+        await sql`
+      INSERT INTO transactions (
+        account_number,
+        type,
+        amount,
+        reference,
+        created_at
+      ) VALUES (
+        ${loanReq.account_number},
+        'credit',
+        ${loanReq.loan_amount},
+        ${'Loan Approved - Loan ID ' + loanId},
+        NOW()
+      )
+    `;
+
+        // 4️⃣ Delete loan request
+        await sql`
+      DELETE FROM loan_req
+      WHERE id = ${loan_id}
+    `;
+
+        // 🔹 Commit transaction
+        await sql`COMMIT`;
+
+        // 5️⃣ Send email (after commit)
+        await sendEmail(
+          loanReq.email,
+          "Loan Approved & Amount Credited",
+          `Dear ${loanReq.name},
+
+Your loan has been approved and the amount has been credited to your bank account.
 
 Loan Amount: ₹${loanReq.loan_amount}
+Account Number: ${loanReq.account_number}
 
 Regards,
 MYBANK`
-      );
+        );
 
-      return res.status(200).json({
-        success: true,
-        message: "Loan approved and moved to loans table",
-      });
+        return res.status(200).json({
+          success: true,
+          message: "Loan approved and amount credited successfully",
+        });
+
+      } catch (error) {
+        // 🔴 Rollback to savepoint
+        await sql`ROLLBACK TO SAVEPOINT loan_approve`;
+        await sql`ROLLBACK`;
+
+        console.error("Loan Approval Failed:", error);
+
+        return res.status(500).json({
+          success: false,
+          message: "Loan approval failed, transaction rolled back",
+        });
+      }
     }
+
+
 
     return res.status(400).json({
       success: false,
@@ -422,24 +476,26 @@ export const getLoanPaymentDetails = async (req, res) => {
       });
     }
 
-    // Fetch loan info and summary
-    let loanQuery = await sql`
+    // 🔹 Loan + payment summary
+    const loanResult = await sql`
       SELECT
         l.id AS loan_id,
         l.user_id,
         l.loan_type,
-        l.loan_amount,
+        l.loan_amount AS remaining_principal,
         l.interest_rate,
         l.tenure,
         l.status,
         l.created_at,
+
         COALESCE(SUM(lp.amount), 0) AS total_paid,
+        COALESCE(SUM(lp.principal_component), 0) AS principal_paid,
+        COALESCE(SUM(lp.interest_component), 0) AS interest_paid,
         COUNT(lp.id) AS paid_emis,
+
         u.name,
         u.email,
-        a.account_number,
-        a.account_type,
-        a.balance
+        a.account_number
       FROM loans l
       JOIN users u ON u.id = l.user_id
       LEFT JOIN accounts a ON a.user_id = u.id
@@ -449,27 +505,32 @@ export const getLoanPaymentDetails = async (req, res) => {
       GROUP BY l.id, u.id, a.id
     `;
 
-    if (loanQuery.length === 0) {
+    if (loanResult.length === 0) {
       return res.status(404).json({
         success: false,
-        message: "Loan not found or you are not authorized",
+        message: "Loan not found or unauthorized",
       });
     }
 
-    const loan = loanQuery[0];
+    const loan = loanResult[0];
 
-    // Convert numeric strings to numbers for calculations
-    const loanAmount = Number(loan.loan_amount);
+    const remainingPrincipal = Number(loan.remaining_principal);
+    const principalPaid = Number(loan.principal_paid);
+    const interestPaid = Number(loan.interest_paid);
     const totalPaid = Number(loan.total_paid);
-    const interestRate = Number(loan.interest_rate);
 
-    const total_interest = (loanAmount * interestRate * loan.tenure) / 100;
-    const total_payable = loanAmount + total_interest;
-    const monthly_emi = total_payable / loan.tenure;
-    const remaining_amount = total_payable - totalPaid;
-    const remaining_tenure = loan.tenure - loan.paid_emis;
+    const originalLoanAmount = remainingPrincipal + principalPaid;
 
-    // Fetch all EMI payments for this loan
+    const totalInterest =
+      (originalLoanAmount * loan.interest_rate * loan.tenure) / 100;
+
+    const totalPayable = originalLoanAmount + totalInterest;
+    const monthlyEmi = totalPayable / loan.tenure;
+
+    const remainingAmount = totalPayable - totalPaid;
+    const remainingTenure = loan.tenure - loan.paid_emis;
+
+    // 🔹 EMI payment history
     const payments = await sql`
       SELECT
         id AS payment_id,
@@ -484,27 +545,33 @@ export const getLoanPaymentDetails = async (req, res) => {
       ORDER BY payment_date ASC
     `;
 
-    // Return combined response
     return res.status(200).json({
       success: true,
       data: {
         loan_summary: {
           loan_id: loan.loan_id,
           loan_type: loan.loan_type,
-          loan_amount: loanAmount,
-          interest_rate: interestRate,
+          original_loan_amount: Number(originalLoanAmount.toFixed(2)),
+          remaining_principal: Number(remainingPrincipal.toFixed(2)),
+          interest_rate: Number(loan.interest_rate),
           tenure: loan.tenure,
-          total_interest: Number(total_interest.toFixed(2)),
-          total_payable: Number(total_payable.toFixed(2)),
-          monthly_emi: Number(monthly_emi.toFixed(2)),
+
+          total_interest: Number(totalInterest.toFixed(2)),
+          total_payable: Number(totalPayable.toFixed(2)),
+          monthly_emi: Number(monthlyEmi.toFixed(2)),
+
           total_paid: Number(totalPaid.toFixed(2)),
-          remaining_amount: Number(remaining_amount.toFixed(2)),
-          paid_emis: Number(loan.paid_emis),
-          remaining_tenure,
+          principal_paid: Number(principalPaid.toFixed(2)),
+          interest_paid: Number(interestPaid.toFixed(2)),
+
+          remaining_amount: Number(remainingAmount.toFixed(2)),
+          paid_emis: loan.paid_emis,
+          remaining_tenure: remainingTenure,
+
           status: loan.status,
         },
-        payments
-      }
+        payments,
+      },
     });
 
   } catch (error) {
@@ -515,4 +582,158 @@ export const getLoanPaymentDetails = async (req, res) => {
     });
   }
 };
+
+
+
+export const loanPayment = async (req, res) => {
+  try {
+    const role = req.role;          // user | staff | admin
+    const payerId = req.id;         // logged-in user
+    const { amount, payment_method } = req.body;
+    const { loan_id } = req.params;
+    if (!loan_id || !amount || amount <= 0) {
+      return res.status(400).json({
+        success: false,
+        message: "Loan ID and valid amount are required",
+      });
+    }
+
+    /* ============================
+       1️⃣ Fetch Loan (NO TX)
+    ============================ */
+    const loanRows = await sql`
+      SELECT id, user_id, loan_amount, status
+      FROM loans
+      WHERE id = ${loan_id}
+    `;
+
+    if (loanRows.length === 0) {
+      return res.status(404).json({
+        success: false,
+        message: "Loan not found",
+      });
+    }
+
+    const loan = loanRows[0];
+
+    if (loan.status !== "approved") {
+      return res.status(400).json({
+        success: false,
+        message: "Loan is not active",
+      });
+    }
+
+    // User can pay only own loan
+    if (role === "user" && loan.user_id !== payerId) {
+      return res.status(403).json({
+        success: false,
+        message: "You can pay only your own loan",
+      });
+    }
+
+    if (amount > loan.loan_amount) {
+      return res.status(400).json({
+        success: false,
+        message: "Amount exceeds remaining loan balance",
+      });
+    }
+
+    /* ============================
+       2️⃣ Fetch Loan Owner Account
+    ============================ */
+    const accountRows = await sql`
+      SELECT account_number, balance
+      FROM accounts
+      WHERE user_id = ${loan.user_id}
+    `;
+
+    if (accountRows.length === 0) {
+      return res.status(404).json({
+        success: false,
+        message: "Loan owner account not found",
+      });
+    }
+
+    const account = accountRows[0];
+
+    // If NOT cash → check balance
+    if (payment_method !== "cash" && account.balance < amount) {
+      return res.status(400).json({
+        success: false,
+        message: "Insufficient balance in user's account",
+      });
+    }
+
+    const remainingBalance = loan.loan_amount - amount;
+
+    /* ============================
+       3️⃣ TRANSACTION (NEON WAY)
+    ============================ */
+    await sql.transaction([
+      // 1️⃣ Deduct balance (only if not cash)
+      ...(payment_method !== "cash"
+        ? [
+          sql`
+              UPDATE accounts
+              SET balance = balance - ${amount}
+              WHERE user_id = ${loan.user_id}
+            `,
+        ]
+        : []),
+
+      // 2️⃣ Insert payment
+      sql`
+        INSERT INTO loan_payments (
+          loan_id,
+          amount,
+          principal_component,
+          interest_component,
+          remaining_balance,
+          payment_method
+        ) VALUES (
+          ${loan_id},
+          ${amount},
+          ${amount},
+          0,
+          ${remainingBalance},
+          ${payment_method || "online"}
+        )
+      `,
+
+      // 3️⃣ Update loan
+      sql`
+        UPDATE loans
+        SET loan_amount = ${remainingBalance},
+            status = ${remainingBalance === 0 ? "closed" : "approved"},
+            updated_at = NOW()
+        WHERE id = ${loan_id}
+      `,
+    ]);
+
+    return res.status(200).json({
+      success: true,
+      message:
+        role === "user"
+          ? "Loan payment successful"
+          : "Loan payment completed by staff/admin",
+      data: {
+        paid_amount: amount,
+        remaining_balance: remainingBalance,
+        payment_method: payment_method || "online",
+      },
+    });
+
+  } catch (error) {
+    console.error("Loan Payment Error:", error);
+
+    return res.status(500).json({
+      success: false,
+      message: "Loan payment failed",
+    });
+  }
+};
+
+
+
+
 

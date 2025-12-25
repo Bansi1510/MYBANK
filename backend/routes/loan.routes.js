@@ -1,7 +1,7 @@
 import express from "express";
 import { isAuthenticated } from "../middleware/isAutheticated.js";
 import { isUser } from "../middleware/isUser.js";
-import { applyLoan, getLoanPaymentDetails, getLoanReq, loanDetails, updateLoanStatus } from "../controllers/loan.controller.js";
+import { applyLoan, getLoanPaymentDetails, getLoanReq, loanDetails, loanPayment, updateLoanStatus } from "../controllers/loan.controller.js";
 import { dynamicUpload } from "../middleware/multer.js";
 import { isAdminOrStaff } from "../middleware/isAdminOrStaff.js";
 
@@ -14,5 +14,6 @@ LoanRoute.patch("/update-loan-status/:loan_id", isAuthenticated, isAdminOrStaff,
 LoanRoute.get("/loans", isAuthenticated, loanDetails);
 LoanRoute.get("/loans/:loanId", isAuthenticated, loanDetails);
 LoanRoute.get("/loans/:loanId/payments", isAuthenticated, getLoanPaymentDetails);
+LoanRoute.post("/loans/:loan_id/payment", isAuthenticated, loanPayment);
 
 export default LoanRoute;
