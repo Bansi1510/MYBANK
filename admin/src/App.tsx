@@ -18,6 +18,8 @@ import AccountDetails from './components/admin/account-management/AccountDetails
 import AddStaff from './components/admin/staff-management/AddStaff'
 import StaffTable from './components/admin/staff-management/StaffTable'
 import AccountsTable from './components/staff/customer-account/AccountsTable'
+import CustomerLoan from './components/staff/CustomerLoan'
+import LoanRequestList from './components/staff/customer-loan/LoanRequestList'
 
 
 
@@ -73,6 +75,13 @@ const appRouter = createBrowserRouter([
           { path: "new-account", element: <NewBankAccountRequest /> },
           { path: "all-accounts", element: <AccountsTable /> }
         ],
+      },
+      {
+        path: "customer-loan",
+        element: <CustomerLoan />,
+        children: [
+          { path: "loan-applications", element: <LoanRequestList /> }
+        ]
       },
       { path: "kyc", element: <KYCVerification /> },
       { path: "transactions", element: <DailyTransactions /> },

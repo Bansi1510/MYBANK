@@ -96,10 +96,50 @@ export const getLoanReq = async (req, res) => {
   try {
     const loans = await sql`
       SELECT
+        u.name AS "userName",
+        u.mobile_number AS "mobileNumber",
+        u.aadhar_number AS "aadharCardNumber",
+        u.pan_number AS "panNumber",
+
+        a.account_number AS "accountNumber",
+        a.account_type AS "accountType",
+        a.balance,
+
+        lr.loan_type AS "loanType",
+        lr.status,
+        lr.id AS loan_id
+
+      FROM loan_req lr
+      INNER JOIN users u ON lr.user_id = u.id
+      LEFT JOIN accounts a ON a.user_id = u.id
+      ORDER BY lr.created_at DESC
+    `;
+
+    return res.status(200).json({
+      status: true,
+      message: "Loan requests fetched successfully",
+      data: loans,
+    });
+  } catch (error) {
+    console.error("Get Loan Requests Error:", error);
+    return res.status(500).json({
+      status: false,
+      message: "Server error",
+    });
+  }
+};
+
+export const getLoanReqById = async (req, res) => {
+  try {
+    const { loanReqId } = req.params;
+
+    const [loan] = await sql`
+      SELECT
         lr.id AS loan_id,
         lr.loan_type,
         lr.loan_amount,
         lr.tenure,
+        lr.documents,
         lr.status AS loan_status,
         lr.created_at AS loan_created_at,
 
@@ -117,22 +157,30 @@ export const getLoanReq = async (req, res) => {
       FROM loan_req lr
       INNER JOIN users u ON lr.user_id = u.id
       LEFT JOIN accounts a ON a.user_id = u.id
-      ORDER BY lr.created_at DESC
+      WHERE lr.id = ${loanReqId}
     `;
+
+    if (!loan) {
+      return res.status(404).json({
+        status: false,
+        message: "Loan request not found",
+      });
+    }
 
     return res.status(200).json({
       status: true,
-      message: "Loan requests fetched successfully",
-      data: loans,
+      message: "Loan request fetched successfully",
+      data: loan,
     });
   } catch (error) {
-    console.error("Get Loan Request Error:", error);
+    console.error("Get Loan Request By ID Error:", error);
     return res.status(500).json({
       status: false,
       message: "Server error",
     });
   }
 };
+
 
 export const updateLoanStatus = async (req, res) => {
   try {
