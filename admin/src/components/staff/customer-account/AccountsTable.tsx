@@ -12,13 +12,13 @@ interface Account {
 }
 
 const AccountsTable: React.FC = () => {
-  const [accounts, setAccounts] = useState<Account[]>([])
+  const [accounts, setAccounts] = useState<Account[]>([]);
 
   useEffect(() => {
     const fetchData = async () => {
       const data = await getAccByStatus();
       setAccounts(data);
-    }
+    };
     fetchData();
   }, []);
 
@@ -35,48 +35,48 @@ const AccountsTable: React.FC = () => {
 
           {/* Table */}
           <div className="overflow-x-auto">
-            <table className="w-full text-sm">
+            <table className="w-full text-sm border-collapse">
               <thead className="bg-gray-50 text-gray-600">
                 <tr>
-                  <th className="px-4 py-2 text-left">Customer</th>
-                  <th className="px-4 py-2 text-left">Mobile</th>
-                  <th className="px-4 py-2 text-left">Aadhar</th>
-                  <th className="px-4 py-2 text-left">PAN</th>
-                  <th className="px-4 py-2 text-left">Account No</th>
-                  <th className="px-4 py-2 text-left">Type</th>
-                  <th className="px-4 py-2 text-left">Status</th>
-                  <th className="px-4 py-2 text-left">Actions</th>
+                  <th className="px-4 py-2 text-left border-b border-r">Customer</th>
+                  <th className="px-4 py-2 text-left border-b border-r">Mobile</th>
+                  <th className="px-4 py-2 text-left border-b border-r">Aadhar</th>
+                  <th className="px-4 py-2 text-left border-b border-r">PAN</th>
+                  <th className="px-4 py-2 text-left border-b border-r">Account No</th>
+                  <th className="px-4 py-2 text-left border-b border-r">Type</th>
+                  <th className="px-4 py-2 text-left border-b border-r">Status</th>
+                  <th className="px-4 py-2 text-left border-b">Actions</th>
                 </tr>
               </thead>
 
-              <tbody className="divide-y">
+              <tbody>
                 {accounts.map((acc, index) => (
                   <tr key={index} className="hover:bg-gray-50">
-                    <td className="px-4 py-2 font-medium text-gray-800">
+                    <td className="px-4 py-2 border-b border-r font-medium text-gray-800">
                       {acc.name}
                     </td>
 
-                    <td className="px-4 py-2 whitespace-nowrap">
+                    <td className="px-4 py-2 border-b border-r whitespace-nowrap">
                       {acc.mobile_number}
                     </td>
 
-                    <td className="px-4 py-2">
+                    <td className="px-4 py-2 border-b border-r">
                       {acc.aadhar_number}
                     </td>
 
-                    <td className="px-4 py-2">
+                    <td className="px-4 py-2 border-b border-r">
                       {acc.pan_number || "-"}
                     </td>
 
-                    <td className="px-4 py-2 font-mono text-gray-700">
+                    <td className="px-4 py-2 border-b border-r font-mono text-gray-700">
                       {acc.account_number}
                     </td>
 
-                    <td className="px-4 py-2 capitalize">
+                    <td className="px-4 py-2 border-b border-r capitalize">
                       {acc.account_type}
                     </td>
 
-                    <td className="px-4 py-2">
+                    <td className="px-4 py-2 border-b border-r">
                       <span
                         className={`px-2 py-0.5 rounded-full text-xs
                           ${acc.status === "Active"
@@ -88,8 +88,8 @@ const AccountsTable: React.FC = () => {
                       </span>
                     </td>
 
-                    <td className="px-4 py-2 space-x-3">
-                      <button className="text-blue-600 text-xs hover:underline">
+                    <td className="px-4 py-2 border-b">
+                      <button className="text-blue-600 text-xs hover:underline mr-3">
                         Edit
                       </button>
                       <button className="text-red-600 text-xs hover:underline">
@@ -98,6 +98,17 @@ const AccountsTable: React.FC = () => {
                     </td>
                   </tr>
                 ))}
+
+                {accounts.length === 0 && (
+                  <tr>
+                    <td
+                      colSpan={8}
+                      className="px-4 py-6 text-center text-gray-500"
+                    >
+                      No accounts found
+                    </td>
+                  </tr>
+                )}
               </tbody>
             </table>
           </div>

@@ -25,7 +25,6 @@ const Login: React.FC = () => {
     console.log(data);
 
     const user = await Login_API(data);
-
     if (user) {
       dispatch(setUserData(user));
       navigate("/")
