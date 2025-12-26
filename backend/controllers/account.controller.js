@@ -34,11 +34,40 @@ export const allAcc = async (req, res) => {
   try {
 
     const { status } = req.query;
-    const rows = await sql`
-      SELECT a.name,a.mobile_number,a.aadhar_number,a.pan_number,b.account_number,b.account_type,b.status
-      FROM users a,accounts b 
-      WHERE a.id=b.user_id AND b.status=${status};
-      `
+
+    let rows;
+
+    if (status === undefined) {
+      rows = await sql`
+    SELECT 
+      a.name,
+      a.mobile_number,
+      a.aadhar_number,
+      a.pan_number,
+      b.account_number,
+      b.account_type,
+      b.status
+    FROM users a
+    JOIN accounts b ON a.id = b.user_id;
+  `;
+    } else {
+      rows = await sql`
+    SELECT 
+      a.name,
+      a.mobile_number,
+      a.aadhar_number,
+      a.pan_number,
+      b.account_number,
+      b.account_type,
+      b.status
+    FROM users a
+    JOIN accounts b ON a.id = b.user_id
+    WHERE b.status = ${status};
+  `;
+    }
+
+
+
     return res.status(200).json({
       status: true,
       data: rows

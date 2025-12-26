@@ -91,9 +91,11 @@ export const newAccHisAPI=async():Promise<AccountHistory[]|[]>=>{
   }
 }
 
-export const getAccByStatus=async(status:string):Promise<Account[]|[]>=>{
+export const getAccByStatus=async(status?:string):Promise<Account[]|[]>=>{
   try {
-    const res=await API.get(`all-acc?status=${status}`)
+       const url = status ? `all-acc?status=${status}` : `all-acc`;
+
+    const res=await API.get(url)
     if(res.data.status){
       toast.success(res.data.message);
       return res.data.data;

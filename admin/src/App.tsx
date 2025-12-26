@@ -17,6 +17,7 @@ import AccountStatusView from './components/admin/account-management/AccountStat
 import AccountDetails from './components/admin/account-management/AccountDetails'
 import AddStaff from './components/admin/staff-management/AddStaff'
 import StaffTable from './components/admin/staff-management/StaffTable'
+import AccountsTable from './components/staff/customer-account/AccountsTable'
 
 
 
@@ -70,6 +71,7 @@ const appRouter = createBrowserRouter([
         element: <CustomerAccounts />,
         children: [
           { path: "new-account", element: <NewBankAccountRequest /> },
+          { path: "all-accounts", element: <AccountsTable /> }
         ],
       },
       { path: "kyc", element: <KYCVerification /> },

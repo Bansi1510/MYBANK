@@ -3,6 +3,7 @@ import { NavLink } from "react-router-dom";
 
 const staffOptions = [
   { name: "Customer Accounts", path: "customer-accounts" },
+  { name: "Customer Loans", path: "customer-loan" },
   { name: "KYC Verification", path: "kyc" },
   { name: "Daily Transactions", path: "transactions" },
   { name: "Cash Deposit / Withdraw", path: "cash" },
