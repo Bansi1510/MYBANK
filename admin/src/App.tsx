@@ -20,6 +20,7 @@ import StaffTable from './components/admin/staff-management/StaffTable'
 import AccountsTable from './components/staff/customer-account/AccountsTable'
 import CustomerLoan from './components/staff/CustomerLoan'
 import LoanRequestList from './components/staff/customer-loan/LoanRequestList'
+import SingleLoanRequest from './components/staff/customer-loan/SingleLoanRequest'
 
 
 
@@ -80,7 +81,8 @@ const appRouter = createBrowserRouter([
         path: "customer-loan",
         element: <CustomerLoan />,
         children: [
-          { path: "loan-applications", element: <LoanRequestList /> }
+          { path: "loan-applications", element: <LoanRequestList /> },
+          { path: "loan-applications/details/:loan_id", element: <SingleLoanRequest /> }
         ]
       },
       { path: "kyc", element: <KYCVerification /> },

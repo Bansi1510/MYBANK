@@ -3,6 +3,7 @@ import cloudinary from "../utils/cloudinary.js";
 import getDataUri from "../utils/datauri.js";
 import sendEmail from "../utils/sendEmail.js";
 
+
 export const applyLoan = async (req, res) => {
   try {
     const user_id = req.id;
@@ -33,7 +34,6 @@ export const applyLoan = async (req, res) => {
         status: false,
       });
     }
-
     const uploadedFiles = {};
 
     if (req.files && req.files.length > 0) {
@@ -45,19 +45,20 @@ export const applyLoan = async (req, res) => {
         }
 
         const fileDataUri = getDataUri(file);
+        const isPDF = file.mimetype === "application/pdf";
 
         const result = await cloudinary.uploader.upload(
           fileDataUri.content,
           {
             folder: `MYBANK/loan_documents/${loan_type}`,
+            resource_type: isPDF ? "raw" : "image",
           }
         );
 
         uploadedFiles[fieldName].push({
           url: result.secure_url,
           public_id: result.public_id,
-          file_type:
-            file.mimetype === "application/pdf" ? "pdf" : "image",
+          file_type: isPDF ? "pdf" : "image",
         });
       }
     }
@@ -288,7 +289,7 @@ MYBANK`
         ${loanReq.user_id},
         ${loanReq.account_number},
         ${loanReq.loan_type},
-        ${interest_rate || 10},
+        ${interest_rate || 2},
         'approved',
         ${adminId},
         NOW(),

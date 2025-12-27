@@ -68,7 +68,7 @@ const LoanRequestList: React.FC = () => {
                   </td>
                   <td className="border px-4 py-2 text-center">
                     <Link
-                      to={`details/${item.accountNumber}`}
+                      to={`details/${item.loan_id}`}
                       className="text-blue-600 hover:underline font-medium"
                     >
                       Show
