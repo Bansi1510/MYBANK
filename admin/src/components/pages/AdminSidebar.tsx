@@ -6,7 +6,7 @@ const sidebarOptions = [
   { name: "Staff Management", path: "staff" },
   { name: "Customer KYC", path: "kyc" },
   { name: "All Transactions", path: "transactions" },
-  { name: "Loan Approval", path: "loans" },
+  { name: "Loan Approval", path: "loan" },
   { name: "Reports", path: "reports" },
   { name: "Requests", path: "requests" },
   { name: "Settings", path: "settings" },

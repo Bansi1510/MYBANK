@@ -1,6 +1,6 @@
 import React, { useEffect, useState } from "react";
 import { Link } from "react-router-dom";
-import { getLoanReqAPI, type AllLoanRequest } from "../../services/loan.api";
+import { getLoanReqAPI, type AllLoanRequest } from "../services/loan.api";
 
 const LoanRequestList: React.FC = () => {
   const [data, setData] = useState<AllLoanRequest[]>([]);

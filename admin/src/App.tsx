@@ -19,7 +19,7 @@ import AddStaff from './components/admin/staff-management/AddStaff'
 import StaffTable from './components/admin/staff-management/StaffTable'
 import AccountsTable from './components/staff/customer-account/AccountsTable'
 import CustomerLoan from './components/staff/CustomerLoan'
-import LoanRequestList from './components/staff/customer-loan/LoanRequestList'
+import LoanRequestList from './components/common/LoanRequestList'
 import SingleLoanRequest from './components/staff/customer-loan/SingleLoanRequest'
 
 
@@ -61,7 +61,14 @@ const appRouter = createBrowserRouter([
 
 
       },
-      { path: "loans", element: <LoanApproval /> },
+      {
+        path: "loan",
+        element: <LoanApproval />,
+        children: [
+          { path: "pending", element: <LoanRequestList /> }
+        ]
+
+      },
     ],
   },
 
