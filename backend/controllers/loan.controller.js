@@ -318,7 +318,7 @@ MYBANK`
             from_account,
             to_account,
             description,
-            initiated_by_user
+            initiated_by_staff
           ) VALUES (
             ${loanReq.account_number},
             'credit',

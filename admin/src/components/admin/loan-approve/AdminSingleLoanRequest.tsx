@@ -1,5 +1,5 @@
 import React, { useEffect, useState } from "react";
-import { useParams } from "react-router-dom";
+import { useNavigate, useParams } from "react-router-dom";
 import {
   getSingleLoanReqAPI,
   updateLoanReqStatus,
@@ -7,6 +7,7 @@ import {
 } from "../../services/loan.api";
 
 const AdminSingleLoanRequest: React.FC = () => {
+  const navigate = useNavigate();
   const { loan_id } = useParams<{ loan_id: string }>();
   const [data, setData] = useState<LoanData | null>(null);
   const [action, setAction] = useState<"approve" | "reject" | null>(null);
@@ -60,10 +61,11 @@ const AdminSingleLoanRequest: React.FC = () => {
       interestRate // set interest during approval
     );
     if (res) {
-      fetchData();
+
       setAction(null);
       setInterestInput("");
       setInterestRate(null);
+      navigate(-1);
     }
   };
 
@@ -89,10 +91,10 @@ const AdminSingleLoanRequest: React.FC = () => {
           Status:{" "}
           <span
             className={`${data.loan_status === "under_process"
-                ? "text-yellow-600"
-                : data.loan_status === "approved"
-                  ? "text-green-600"
-                  : "text-red-600"
+              ? "text-yellow-600"
+              : data.loan_status === "approved"
+                ? "text-green-600"
+                : "text-red-600"
               }`}
           >
             {data.loan_status}
