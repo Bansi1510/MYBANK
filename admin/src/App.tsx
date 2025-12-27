@@ -21,6 +21,7 @@ import AccountsTable from './components/staff/customer-account/AccountsTable'
 import CustomerLoan from './components/staff/CustomerLoan'
 import LoanRequestList from './components/common/LoanRequestList'
 import SingleLoanRequest from './components/staff/customer-loan/SingleLoanRequest'
+import AdminSingleLoanRequest from './components/admin/loan-approve/AdminSingleLoanRequest'
 
 
 
@@ -65,7 +66,9 @@ const appRouter = createBrowserRouter([
         path: "loan",
         element: <LoanApproval />,
         children: [
-          { path: "pending", element: <LoanRequestList /> }
+          { path: "pending", element: <LoanRequestList /> },
+          { path: "pending/details/:loan_id", element: <AdminSingleLoanRequest /> }
+
         ]
 
       },

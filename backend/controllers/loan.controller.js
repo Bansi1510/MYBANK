@@ -184,12 +184,12 @@ export const getLoanReqById = async (req, res) => {
 
 
 export const updateLoanStatus = async (req, res) => {
-  try {
-    const { loan_id } = req.params;
-    const { action, reject_reason, interest_rate } = req.body;
-    const role = req.role;
-    const adminId = req.id;
+  const { loan_id } = req.params;
+  const { action, reject_reason, interest_rate } = req.body;
+  const role = req.role;
+  const adminId = req.id;
 
+  try {
     const loan = await sql`
       SELECT lr.*, u.email, u.name, a.account_number
       FROM loan_req lr
@@ -207,6 +207,7 @@ export const updateLoanStatus = async (req, res) => {
 
     const loanReq = loan[0];
 
+    /* ================== REJECT (STAFF / ADMIN) ================== */
     if (action === "reject") {
       await sql`
         UPDATE loan_req
@@ -222,9 +223,7 @@ export const updateLoanStatus = async (req, res) => {
 Your loan request has been rejected.
 
 Loan ID: ${loanReq.id}
-
-Reason:
-${reject_reason || "Not specified"}
+Reason: ${reject_reason || "Not specified"}
 
 Regards,
 MYBANK`
@@ -236,6 +235,7 @@ MYBANK`
       });
     }
 
+    /* ================== STAFF APPROVAL ================== */
     if (role === "staff" && action === "approve") {
       await sql`
         UPDATE loan_req
@@ -263,89 +263,92 @@ MYBANK`
       });
     }
 
+    /* ================== ADMIN FINAL APPROVAL ================== */
     if (role === "admin" && action === "approve") {
       try {
-        // 🔹 Start transaction
+        /* 🔹 START TRANSACTION */
         await sql`BEGIN`;
 
-        // 🔹 Create savepoint
-        await sql`SAVEPOINT loan_approve`;
-
-        // 1️⃣ Insert into loans table
+        // 1️⃣ Create loan
         const loanResult = await sql`
-      INSERT INTO loans (
-        user_id,
-        account_number,
-        loan_type,
-        interest_rate,
-        status,
-        approved_by,
-        approved_at,
-        loan_amount,
-        tenure,
-        documents,
-        loan_req_id
-      ) VALUES (
-        ${loanReq.user_id},
-        ${loanReq.account_number},
-        ${loanReq.loan_type},
-        ${interest_rate || 2},
-        'approved',
-        ${adminId},
-        NOW(),
-        ${loanReq.loan_amount},
-        ${loanReq.tenure},
-        ${loanReq.documents},
-        ${loanReq.id}
-      )
-      RETURNING id
-    `;
+          INSERT INTO loans (
+            user_id,
+            account_number,
+            loan_type,
+            interest_rate,
+            status,
+            approved_by,
+            approved_at,
+            loan_amount,
+            tenure,
+            documents,
+            loan_req_id
+          ) VALUES (
+            ${loanReq.user_id},
+            ${loanReq.account_number},
+            ${loanReq.loan_type},
+            ${interest_rate},
+            'approved',
+            ${adminId},
+            NOW(),
+            ${loanReq.loan_amount},
+            ${loanReq.tenure},
+            ${loanReq.documents},
+            ${loanReq.id}
+          )
+          RETURNING id
+        `;
 
-        const loanId = loanResult[0].id;
+        const newLoanId = loanResult[0].id;
 
-        // 2️⃣ Credit loan amount to account
+        // 2️⃣ Credit account
         await sql`
-      UPDATE accounts
-      SET balance = balance + ${loanReq.loan_amount}
-      WHERE account_number = ${loanReq.account_number}
-    `;
+          UPDATE accounts
+          SET balance = balance + ${loanReq.loan_amount}
+          WHERE account_number = ${loanReq.account_number}
+        `;
 
-        // 3️⃣ Insert transaction history
+        // 3️⃣ Insert transaction history (YOUR TABLE STRUCTURE)
         await sql`
-      INSERT INTO transactions (
-        account_number,
-        type,
-        amount,
-        reference,
-        created_at
-      ) VALUES (
-        ${loanReq.account_number},
-        'credit',
-        ${loanReq.loan_amount},
-        ${'Loan Approved - Loan ID ' + loanId},
-        NOW()
-      )
-    `;
+          INSERT INTO transactions (
+            account_number,
+            transaction_type,
+            amount,
+            currency,
+            from_account,
+            to_account,
+            description,
+            initiated_by_user
+          ) VALUES (
+            ${loanReq.account_number},
+            'credit',
+            ${loanReq.loan_amount},
+            'INR',
+            'bank',
+            ${loanReq.account_number},
+            ${'Loan Approved - Loan ID ' + newLoanId},
+            ${adminId}
+          )
+        `;
 
         // 4️⃣ Delete loan request
         await sql`
-      DELETE FROM loan_req
-      WHERE id = ${loan_id}
-    `;
+          DELETE FROM loan_req
+          WHERE id = ${loan_id}
+        `;
 
-        // 🔹 Commit transaction
+        /* 🔹 COMMIT ONLY IF ALL SUCCESS */
         await sql`COMMIT`;
 
-        // 5️⃣ Send email (after commit)
         await sendEmail(
           loanReq.email,
-          "Loan Approved & Amount Credited",
+          "Loan Approved",
           `Dear ${loanReq.name},
 
-Your loan has been approved and the amount has been credited to your bank account.
+Your loan has been approved and credited.
 
-Loan Amount: ₹${loanReq.loan_amount}
-Account Number: ${loanReq.account_number}
+Amount: ₹${loanReq.loan_amount}
+Account: ${loanReq.account_number}
 
 Regards,
 MYBANK`
@@ -353,29 +356,27 @@ MYBANK`
 
         return res.status(200).json({
           status: true,
-          message: "Loan approved and amount credited successfully",
+          message: "Loan approved successfully",
         });
 
-      } catch (error) {
-        // 🔴 Rollback to savepoint
-        await sql`ROLLBACK TO SAVEPOINT loan_approve`;
+      } catch (err) {
+        /* 🔴 CANCEL EVERYTHING */
         await sql`ROLLBACK`;
 
-        console.error("Loan Approval Failed:", error);
+        console.error("Admin Loan Approval Error:", err);
 
         return res.status(500).json({
           status: false,
-          message: "Loan approval failed, transaction rolled back",
+          message: "Loan approval failed. All changes rolled back.",
         });
       }
     }
-
-
 
     return res.status(400).json({
       status: false,
       message: "Invalid action or role",
     });
+
   } catch (error) {
     console.error("Loan Status Error:", error);
     return res.status(500).json({
@@ -384,6 +385,7 @@ MYBANK`
     });
   }
 };
+
 
 export const loanDetails = async (req, res) => {
   try {
