@@ -399,23 +399,13 @@ export const loanDetails = async (req, res) => {
       if (loanId) {
         result = await sql`
           SELECT
-            u.id AS user_id,
-            u.name,
-            u.email,
-            a.account_number,
-            a.account_type,
-            a.balance,
-
             l.id AS loan_id,
             l.loan_type,
             l.loan_amount,
             l.tenure,
             l.status,
             l.created_at
-
           FROM loans l
-          JOIN users u ON u.id = l.user_id
-          LEFT JOIN accounts a ON a.user_id = u.id
           WHERE l.user_id = ${userId}
           AND l.id = ${loanId}
           ORDER BY l.created_at DESC
@@ -423,13 +413,6 @@ export const loanDetails = async (req, res) => {
       } else {
         result = await sql`
           SELECT
-            u.id AS user_id,
-            u.name,
-            u.email,
-            a.account_number,
-            a.account_type,
-            a.balance,
-
             l.id AS loan_id,
             l.loan_type,
             l.loan_amount,
@@ -438,8 +421,6 @@ export const loanDetails = async (req, res) => {
             l.created_at
 
           FROM loans l
-          JOIN users u ON u.id = l.user_id
-          LEFT JOIN accounts a ON a.user_id = u.id
           WHERE l.user_id = ${userId}
           ORDER BY l.created_at DESC
         `;
@@ -448,12 +429,7 @@ export const loanDetails = async (req, res) => {
       if (loanId) {
         result = await sql`
           SELECT
-            u.id AS user_id,
-            u.name,
-            u.email,
-            a.account_number,
-            a.account_type,
-            a.balance,
+             
 
             l.id AS loan_id,
             l.loan_type,
@@ -463,20 +439,13 @@ export const loanDetails = async (req, res) => {
             l.created_at
 
           FROM loans l
-          JOIN users u ON u.id = l.user_id
-          LEFT JOIN accounts a ON a.user_id = u.id
-          WHERE l.id = ${loanId}
+         
           ORDER BY l.created_at DESC
         `;
       } else {
         result = await sql`
           SELECT
-            u.id AS user_id,
-            u.name,
-            u.email,
-            a.account_number,
-            a.account_type,
-            a.balance,
+ 
 
             l.id AS loan_id,
             l.loan_type,
@@ -486,8 +455,7 @@ export const loanDetails = async (req, res) => {
             l.created_at
 
           FROM loans l
-          JOIN users u ON u.id = l.user_id
-          LEFT JOIN accounts a ON a.user_id = u.id
+         
           ORDER BY l.created_at DESC
         `;
       }

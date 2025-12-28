@@ -8,7 +8,14 @@ const API=axios.create({
 
 API.defaults.withCredentials=true;
 
-
+export interface LoanData{
+  loan_id:number,
+  loan_type:string,
+  loan_amount:string,
+  tenure:number,
+  status:string,
+  created_at:string
+}
 export const applyLoanAPI=async(formData:FormData):Promise<boolean>=>{
   try {
     const res=await API.post("apply-loan",formData);
@@ -27,6 +34,6 @@ export const applyLoanAPI=async(formData:FormData):Promise<boolean>=>{
     }
 }
 
-export const getUserLoans=async()=>{
-  
+export const getUserLoans=async():Promise<LoanData[]|LoanData|null>=>{
+
 }
