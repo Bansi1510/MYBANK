@@ -300,7 +300,7 @@ export const verifyOTP = async (req, res) => {
     const refreshToken = generateRefreshToken({ id: user[0].id, role: "user" });
 
     res.cookie("access_token", accessToken, {
-      httpOnly: true,
+      httpOnly: false,
       secure: true,
       sameSite: "none",
       maxAge: 7 * 24 * 60 * 60 * 1000,
