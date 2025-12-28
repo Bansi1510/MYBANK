@@ -26,3 +26,7 @@ export const applyLoanAPI=async(formData:FormData):Promise<boolean>=>{
       return false;
     }
 }
+
+export const getUserLoans=async()=>{
+  
+}

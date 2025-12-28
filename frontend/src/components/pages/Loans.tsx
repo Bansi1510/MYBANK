@@ -3,6 +3,7 @@ import Navbar from "../shared/Navbar";
 import LoanHeader from "../Loans/LoanHeader";
 import LoanCategoryGrid from "../Loans/LoanCategoryGrid";
 import LoanHelp from "../Loans/LoanHelp";
+import UserLoans from "../Loans/UserLoans";
 
 const Loans: React.FC = () => {
   return (
@@ -11,17 +12,9 @@ const Loans: React.FC = () => {
 
       <div className="w-full mt-18 min-h-screen bg-gray-50 p-6">
         <div className="max-w-5xl mx-auto space-y-8">
-
-          {/* Page Title / Trust Section */}
           <LoanHeader />
-
-          {/* Select Loan Type */}
           <LoanCategoryGrid />
-
-          {/* Loan Application Form (NEXT STEP) */}
-          {/* 👉 This is where form should come */}
-
-          {/* Support & Contact */}
+          <UserLoans />
           <LoanHelp />
 
         </div>
