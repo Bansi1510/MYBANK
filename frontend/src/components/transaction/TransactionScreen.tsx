@@ -2,9 +2,9 @@ import React from "react";
 import { useParams } from "react-router-dom";
 import MoneyTransfer from "../services_page/banking/MoneyTransfer";
 import UPIService from "../services_page/upi/UPIService";
-import BankingService from "../services_page/banking/BankingService";
 import InsurancePremium from "../services_page/utility/InsurancePremium";
 import CheckBalance from "../services_page/banking/CheckBalance";
+import LoanService from "../services_page/banking/LoanService";
 
 
 
@@ -18,7 +18,7 @@ type TransactionType =
 const COMPONENT_MAP: Record<TransactionType, React.ReactNode> = {
   transfer: <MoneyTransfer />,
   upi: <UPIService />,
-  loan: <BankingService />,
+  loan: <LoanService />,
   insurance: <InsurancePremium />,
   balance: <CheckBalance />
 };

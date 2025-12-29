@@ -11,7 +11,7 @@ import Contant from "./components/pages/Contact";
 import UPIService from "./components/services_page/upi/UPIService";
 import MobileUPI from "./components/services_page/upi/MobileUPI";
 import AccountUPI from "./components/services_page/upi/AccountUPI";
-import BankingService from "./components/services_page/banking/BankingService";
+import BankingService from "./components/services_page/banking/LoanService";
 import CheckBalance from "./components/services_page/banking/CheckBalance";
 import MoneyTransfer from "./components/services_page/banking/MoneyTransfer";
 import ElectricityBill from "./components/services_page/utility/ElectricityBill";
@@ -20,6 +20,7 @@ import InsurancePremium from "./components/services_page/utility/InsurancePremiu
 import UpiSuccess from "./components/services_page/upi/UpiSuccess";
 import Loans from "./components/pages/Loans";
 import LoanApplicationPage from "./components/Loans/LoanApplicationPage";
+import LoanPaymentForm from "./components/services_page/loan/LoanPaymentForm";
 
 const appRouter = createBrowserRouter([
   {
@@ -92,6 +93,10 @@ const appRouter = createBrowserRouter([
   {
     path: "/services/utility/mobile-recharge",
     element: <MobileRecharge />
+  },
+  {
+    path: "/services/loan/emi",
+    element: <LoanPaymentForm />
   },
   {
     path: "/services/utility/insurance",
