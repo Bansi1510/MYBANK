@@ -14,7 +14,9 @@ export interface LoanData{
   loan_amount:string,
   tenure:number,
   status:string,
-  created_at:string
+  created_at:string,
+  policy_number:string,
+  loan_req_id:string
 }
 export const applyLoanAPI=async(formData:FormData):Promise<boolean>=>{
   try {
@@ -34,6 +36,19 @@ export const applyLoanAPI=async(formData:FormData):Promise<boolean>=>{
     }
 }
 
-export const getUserLoans=async():Promise<LoanData[]|LoanData|null>=>{
-
+export const getUserLoans=async():Promise<LoanData[]|null>=>{
+  try {
+    const res=await API.get("loans");
+    if(res.data.status){
+      return res.data.data;
+    }else{
+      toast.error(res.data.message);
+      return null;
+    }
+  } catch (error:unknown) {
+    const axiosErr=error as AxiosError<{message?:string}>
+    const msg=axiosErr.response?.data?.message || "can not get user loan";
+    toast.error(msg)
+    return null
+  }
 }

@@ -404,7 +404,10 @@ export const loanDetails = async (req, res) => {
             l.loan_amount,
             l.tenure,
             l.status,
-            l.created_at
+            l.loan_req_id,
+            l.created_at,
+            l.policy_number
+
           FROM loans l
           WHERE l.user_id = ${userId}
           AND l.id = ${loanId}
@@ -418,8 +421,9 @@ export const loanDetails = async (req, res) => {
             l.loan_amount,
             l.tenure,
             l.status,
-            l.created_at
-
+            l.created_at,
+            l.loan_req_id,
+            l.policy_number
           FROM loans l
           WHERE l.user_id = ${userId}
           ORDER BY l.created_at DESC
@@ -436,8 +440,9 @@ export const loanDetails = async (req, res) => {
             l.loan_amount,
             l.tenure,
             l.status,
-            l.created_at
-
+            l.created_at,
+            l.loan_req_id,
+             l.policy_number
           FROM loans l
          
           ORDER BY l.created_at DESC
@@ -452,7 +457,9 @@ export const loanDetails = async (req, res) => {
             l.loan_amount,
             l.tenure,
             l.status,
-            l.created_at
+            l.created_at,
+            l.loan_req_id,
+             l.policy_number
 
           FROM loans l
          
