@@ -15,6 +15,6 @@ LoanRoute.patch("/update-loan-status/:loan_id", isAuthenticated, isAdminOrStaff,
 LoanRoute.get("/loans", isAuthenticated, loanDetails);
 LoanRoute.get("/loans/:loanId", isAuthenticated, loanDetails);
 LoanRoute.get("/loans/:loanId/payments", isAuthenticated, getLoanPaymentDetails);
-LoanRoute.post("/loans/:loan_id/payment", isAuthenticated, loanPayment);
+LoanRoute.post("/payment", isAuthenticated, loanPayment);
 
 export default LoanRoute;

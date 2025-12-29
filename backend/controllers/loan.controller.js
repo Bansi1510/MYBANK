@@ -615,22 +615,22 @@ export const loanPayment = async (req, res) => {
   try {
     const role = req.role;          // user | staff | admin
     const payerId = req.id;         // logged-in user
-    const { amount, payment_method } = req.body;
-    const { loan_id } = req.params;
-    if (!loan_id || !amount || amount <= 0) {
+    const { amount, payment_method, policy_number } = req.body;
+
+    if (!policy_number || !amount || amount <= 0) {
       return res.status(400).json({
         status: false,
-        message: "Loan ID and valid amount are required",
+        message: "Policy number and valid amount are required",
       });
     }
 
     /* ============================
-       1️⃣ Fetch Loan (NO TX)
+       1️⃣ Fetch Loan by policy_number
     ============================ */
     const loanRows = await sql`
       SELECT id, user_id, loan_amount, status
       FROM loans
-      WHERE id = ${loan_id}
+      WHERE policy_number = ${policy_number}
     `;
 
     if (loanRows.length === 0) {
@@ -693,17 +693,17 @@ export const loanPayment = async (req, res) => {
     const remainingBalance = loan.loan_amount - amount;
 
     /* ============================
-       3️⃣ TRANSACTION (NEON WAY)
+       3️⃣ TRANSACTION
     ============================ */
     await sql.transaction([
       // 1️⃣ Deduct balance (only if not cash)
       ...(payment_method !== "cash"
         ? [
           sql`
-              UPDATE accounts
-              SET balance = balance - ${amount}
-              WHERE user_id = ${loan.user_id}
-            `,
+            UPDATE accounts
+            SET balance = balance - ${amount}
+            WHERE user_id = ${loan.user_id}
+          `,
         ]
         : []),
 
@@ -717,12 +717,12 @@ export const loanPayment = async (req, res) => {
           remaining_balance,
           payment_method
         ) VALUES (
-          ${loan_id},
+          ${loan.id},
           ${amount},
           ${amount},
           0,
           ${remainingBalance},
-          ${payment_method || "online"}
+          ${payment_method || "account_debit"}
         )
       `,
 
@@ -732,7 +732,7 @@ export const loanPayment = async (req, res) => {
         SET loan_amount = ${remainingBalance},
             status = ${remainingBalance === 0 ? "closed" : "approved"},
             updated_at = NOW()
-        WHERE id = ${loan_id}
+        WHERE id = ${loan.id}
       `,
     ]);
 

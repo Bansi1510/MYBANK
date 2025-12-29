@@ -5,8 +5,13 @@ const API=axios.create({
   baseURL:"http://localhost:1510/api/v1/loan/",
   withCredentials:true
 })
-
 API.defaults.withCredentials=true;
+
+export interface loanPaymentAPIresponse{
+  paid_amount:number,
+  remaining_balance:number,
+  payment_method:string
+}
 
 export interface LoanData{
   loan_id:number,
@@ -48,7 +53,23 @@ export const getUserLoans=async():Promise<LoanData[]|null>=>{
   } catch (error:unknown) {
     const axiosErr=error as AxiosError<{message?:string}>
     const msg=axiosErr.response?.data?.message || "can not get user loan";
-    toast.error(msg)
-    return null
+    toast.error(msg);
+    return null;
+  }
+}
+export const loanEMIpaymentAPI=async(policy_number:string,amount:number):Promise<loanPaymentAPIresponse|false>=>{
+  try {
+    const res=await API.post(`payment`,{amount,policy_number});
+    if(res.data.status){
+       return res.data.data;
+    }else{
+      toast.error(res.data.message);
+      return false;
+    }
+  } catch (error:unknown) {
+    const axiosErr=error as AxiosError<{message?:string}>;
+    const msg=axiosErr.response?.data?.message || "can not pay amount ";
+    toast.error(msg);
+    return false;
   }
 }
