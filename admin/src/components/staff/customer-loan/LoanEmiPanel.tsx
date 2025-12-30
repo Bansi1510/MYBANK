@@ -3,6 +3,7 @@ import {
   getLoanPaymentDetailsAPI,
   payLoanEmiAPI,
   type LoanEMIData,
+  type LoanPayment,
   type loanPaymentResposnes,
 } from "../../services/loan.api";
 
@@ -11,7 +12,7 @@ const LoanEmiPanel: React.FC = () => {
   const [policyNumber, setPolicyNumber] = useState("");
   const [loan, setLoan] = useState<LoanEMIData | null>(null);
   const [showPayForm, setShowPayForm] = useState(false);
-
+  const [payments, setPayments] = useState<LoanPayment[]>([]);
   const [amount, setAmount] = useState("");
   const [paymentMethod, setPaymentMethod] = useState("");
 
@@ -27,15 +28,18 @@ const LoanEmiPanel: React.FC = () => {
   };
 
   const getLoanDetails = async () => {
-    const loanData = await getLoanPaymentDetailsAPI(policyNumber);
-    if (!loanData) return;
+    const res = await getLoanPaymentDetailsAPI(policyNumber);
+    if (!res) return;
 
-    setLoan(loanData);
+    setLoan(res.loan);
+    setPayments(res.payments);
+
     setShowPayForm(false);
     setPaymentResult(null);
     setAmount("");
     setPaymentMethod("");
   };
+
 
   const payEmi = async () => {
     const res = await payLoanEmiAPI(
@@ -113,6 +117,57 @@ const LoanEmiPanel: React.FC = () => {
           </button>
         </div>
       )}
+      {/* PAYMENT HISTORY */}
+      {payments.length > 0 && (
+        <div className="mt-4 border rounded p-3">
+          <p className="font-semibold mb-3">Payment History</p>
+
+          <div className="space-y-3">
+            {payments.map((p, index) => (
+              <div
+                key={p.payment_id || index}
+                className="border rounded p-3 text-sm"
+              >
+                {/* Row 1 */}
+                <div className="flex justify-between">
+                  <span className="font-medium">
+                    ₹ {p.amount}
+                  </span>
+                  <span className="text-gray-500">
+                    {p.payment_method.toUpperCase()}
+                  </span>
+                </div>
+
+                {/* Row 2 */}
+                <div className="flex justify-between text-gray-500 mt-1">
+                  <span>
+                    Principal: ₹ {p.principal_component}
+                  </span>
+                  <span>
+                    Interest: ₹ {p.interest_component}
+                  </span>
+                </div>
+
+                {/* Row 3 */}
+                <div className="flex justify-between text-gray-400 mt-1">
+                  <span>
+                    Balance: ₹ {p.remaining_balance}
+                  </span>
+                  <span>
+                    {p.payment_date.split("T")[0]}
+                  </span>
+                </div>
+
+                {/* Row 4 */}
+                <div className="text-gray-400 mt-1">
+                  Policy: {p.policy_number}
+                </div>
+              </div>
+            ))}
+          </div>
+        </div>
+      )}
+
 
       {/* Pay form */}
       {showPayForm && loan && (
