@@ -22,6 +22,7 @@ import CustomerLoan from './components/staff/CustomerLoan'
 import LoanRequestList from './components/common/LoanRequestList'
 import SingleLoanRequest from './components/staff/customer-loan/SingleLoanRequest'
 import AdminSingleLoanRequest from './components/admin/loan-approve/AdminSingleLoanRequest'
+import LoanEmiPanel from './components/staff/customer-loan/LoanEmiPanel'
 
 
 
@@ -67,8 +68,7 @@ const appRouter = createBrowserRouter([
         element: <LoanApproval />,
         children: [
           { path: "pending", element: <LoanRequestList /> },
-          { path: "pending/details/:loan_id", element: <AdminSingleLoanRequest /> }
-
+          { path: "pending/details/:loan_id", element: <AdminSingleLoanRequest /> },
         ]
 
       },
@@ -92,7 +92,9 @@ const appRouter = createBrowserRouter([
         element: <CustomerLoan />,
         children: [
           { path: "loan-applications", element: <LoanRequestList /> },
-          { path: "loan-applications/details/:loan_id", element: <SingleLoanRequest /> }
+          { path: "loan-applications/details/:loan_id", element: <SingleLoanRequest /> },
+          { path: "loan-emi-payment", element: <LoanEmiPanel /> }
+
         ]
       },
       { path: "kyc", element: <KYCVerification /> },

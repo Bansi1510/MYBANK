@@ -394,7 +394,7 @@ export const loanDetails = async (req, res) => {
     const { loanId } = req.params;
 
     let result;
-
+    console.log(userId);
     if (role === "user") {
       if (loanId) {
         result = await sql`
@@ -442,7 +442,7 @@ export const loanDetails = async (req, res) => {
             l.status,
             l.created_at,
             l.loan_req_id,
-             l.policy_number
+            l.policy_number
           FROM loans l
          
           ORDER BY l.created_at DESC
@@ -493,19 +493,20 @@ export const getLoanPaymentDetails = async (req, res) => {
   try {
     const userId = req.id;
     const role = req.role;
-    const { loanId } = req.params;
+    const { policyNumber } = req.params;
 
-    if (!loanId) {
+    if (!policyNumber) {
       return res.status(400).json({
         status: false,
-        message: "Loan ID is required",
+        message: "Policy number is required",
       });
     }
 
-    // 🔹 Loan + payment summary
+    // 🔹 Loan + payment summary (based on policy_number)
     const loanResult = await sql`
       SELECT
         l.id AS loan_id,
+        l.policy_number,
         l.user_id,
         l.loan_type,
         l.loan_amount AS remaining_principal,
@@ -525,8 +526,9 @@ export const getLoanPaymentDetails = async (req, res) => {
       FROM loans l
       JOIN users u ON u.id = l.user_id
       LEFT JOIN accounts a ON a.user_id = u.id
-      LEFT JOIN loan_payments lp ON lp.loan_id = l.id
-      WHERE l.id = ${loanId}
+      LEFT JOIN loan_payments lp 
+        ON lp.policy_number = l.policy_number
+      WHERE l.policy_number = ${policyNumber}
       ${role === "user" ? sql`AND l.user_id = ${userId}` : sql``}
       GROUP BY l.id, u.id, a.id
     `;
@@ -556,10 +558,11 @@ export const getLoanPaymentDetails = async (req, res) => {
     const remainingAmount = totalPayable - totalPaid;
     const remainingTenure = loan.tenure - loan.paid_emis;
 
-    // 🔹 EMI payment history
+    // 🔹 EMI payment history (policy based)
     const payments = await sql`
       SELECT
         id AS payment_id,
+        policy_number,
         amount,
         principal_component,
         interest_component,
@@ -567,7 +570,7 @@ export const getLoanPaymentDetails = async (req, res) => {
         payment_date,
         payment_method
       FROM loan_payments
-      WHERE loan_id = ${loanId}
+      WHERE policy_number = ${policyNumber}
       ORDER BY payment_date ASC
     `;
 
@@ -576,7 +579,9 @@ export const getLoanPaymentDetails = async (req, res) => {
       data: {
         loan_summary: {
           loan_id: loan.loan_id,
+          policy_number: loan.policy_number,
           loan_type: loan.loan_type,
+
           original_loan_amount: Number(originalLoanAmount.toFixed(2)),
           remaining_principal: Number(remainingPrincipal.toFixed(2)),
           interest_rate: Number(loan.interest_rate),

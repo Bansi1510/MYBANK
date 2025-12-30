@@ -14,7 +14,7 @@ LoanRoute.get("/new-loan-req/:loanReqId", isAuthenticated, isAdminOrStaff, getLo
 LoanRoute.patch("/update-loan-status/:loan_id", isAuthenticated, isAdminOrStaff, updateLoanStatus);
 LoanRoute.get("/loans", isAuthenticated, loanDetails);
 LoanRoute.get("/loans/:loanId", isAuthenticated, loanDetails);
-LoanRoute.get("/loans/:loanId/payments", isAuthenticated, getLoanPaymentDetails);
+LoanRoute.get("/:policyNumber/payment-detail", isAuthenticated, getLoanPaymentDetails);
 LoanRoute.post("/payment", isAuthenticated, loanPayment);
 
 export default LoanRoute;

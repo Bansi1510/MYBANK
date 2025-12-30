@@ -34,9 +34,9 @@ const CustomerLoan: React.FC = () => {
       link: "loan-repayments",
     },
     {
-      label: "Loan Closure",
-      desc: "Close completed or foreclosed loans",
-      link: "loan-closure",
+      label: "Loan  EMI Payment",
+      desc: "monthly loan EMI payment",
+      link: "loan-emi-payment",
     },
     {
       label: "Overdue Loans",
