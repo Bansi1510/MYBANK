@@ -1,7 +1,6 @@
 import sql from "../utils/db.js"
 import bcrypt from "bcryptjs";
 import jwt from "jsonwebtoken";
-import Joi from "joi";
 import { generateOTP, hashOTP, sendWhatsappOTP } from "../utils/otp.js";
 
 
@@ -12,16 +11,6 @@ const generateAccessToken = (data) => {
 const generateRefreshToken = (data) => {
   return jwt.sign(data, process.env.JWT_REFRESH_SECRET, { expiresIn: "7d" });
 };
-
-const loginSchema = Joi.object({
-  email: Joi.string().email().required(),
-  password: Joi.string().min(6).required()
-});
-
-const otpSchema = Joi.object({
-  email: Joi.string().email().required(),
-  otp: Joi.string().length(6).required()
-});
 
 
 
