@@ -501,7 +501,7 @@ export const getLoanPaymentDetails = async (req, res) => {
         message: "Policy number is required",
       });
     }
-
+    console.log(policyNumber);
     // 🔹 Loan + payment summary (based on policy_number)
     const loanResult = await sql`
       SELECT

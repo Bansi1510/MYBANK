@@ -1,34 +1,17 @@
 import React, { useState } from "react";
+import { getLoanPaymentDetailsAPI, type LoanEMIData } from "../../services/loan.api";
 
 /* =======================
    INTERFACE
 ======================= */
-interface Loan {
-  loan_id: number;
-  policy_number: string;
-  loan_type: string;
-  original_loan_amount: number;
-  remaining_principal: number;
-  interest_rate: number;
-  tenure: number;
-  total_interest: number;
-  total_payable: number;
-  monthly_emi: number;
-  total_paid: number;
-  principal_paid: number;
-  interest_paid: number;
-  remaining_amount: number;
-  paid_emis: string;
-  remaining_tenure: number;
-  status: string;
-}
+
 
 /* =======================
    COMPONENT
 ======================= */
 const LoanEmiPanel: React.FC = () => {
   const [policyNumber, setPolicyNumber] = useState("");
-  const [loan, setLoan] = useState<Loan | null>(null);
+  const [loan, setLoan] = useState<LoanEMIData | null>(null);
   const [showPayForm, setShowPayForm] = useState(false);
 
   const [amount, setAmount] = useState("");
@@ -46,32 +29,12 @@ const LoanEmiPanel: React.FC = () => {
     }
   };
 
-  // 🔹 MOCK: Get Loan Details (Replace with API later)
-  const getLoanDetails = () => {
-    // 👉 API CALL WILL COME HERE
-    // axios.get(`/api/loans/payment-details/${policyNumber}`)
+  const getLoanDetails = async () => {
 
-    const mockLoanData: Loan = {
-      loan_id: 28,
-      policy_number: "PE-2025-000003",
-      loan_type: "personal",
-      original_loan_amount: 100000,
-      remaining_principal: 100000,
-      interest_rate: 2,
-      tenure: 24,
-      total_interest: 48000,
-      total_payable: 148000,
-      monthly_emi: 6166.67,
-      total_paid: 0,
-      principal_paid: 0,
-      interest_paid: 0,
-      remaining_amount: 148000,
-      paid_emis: "0",
-      remaining_tenure: 24,
-      status: "approved",
-    };
-
-    setLoan(mockLoanData);
+    const loanData = await getLoanPaymentDetailsAPI(policyNumber);
+    console.log(loanData);
+    if (!loanData) return;
+    setLoan(loanData);
     setShowPayForm(false);
     setAmount("");
     setPaymentMethod("");

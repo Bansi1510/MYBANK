@@ -44,6 +44,25 @@ export interface LoanData{
 
   documents: Record<string, DocumentItem[]>;
 };
+export interface LoanEMIData {
+  loan_id: number;
+  policy_number: string;
+  loan_type: string;
+  original_loan_amount: number;
+  remaining_principal: number;
+  interest_rate: number;
+  tenure: number;
+  total_interest: number;
+  total_payable: number;
+  monthly_emi: number;
+  total_paid: number;
+  principal_paid: number;
+  interest_paid: number;
+  remaining_amount: number;
+  paid_emis: string;
+  remaining_tenure: number;
+  status: string;
+}
 export const getLoanReqAPI=async():Promise<AllLoanRequest[]|[]>=>{
   try {
     const res=await API.get("new-loan-req");
@@ -96,5 +115,25 @@ export const updateLoanReqStatus=async(loan_id:string,action:string,reject_reaso
       const msg=axiosErr.response?.data?.message||"can not update loan status";
       toast.error(msg);
       return false;
+  }
+}
+
+export const getLoanPaymentDetailsAPI=async(policyNumber:string):Promise<LoanEMIData|null>=>{
+  try {
+    console.log(policyNumber);
+    const res=await API.get(`${policyNumber}/payment-detail`);
+    if(res.data.status){
+    console.log(res.data.loan_summary);
+
+      return res.data.data.loan_summary;
+    }else{
+      toast.error(res.data.message);
+      return null;
+    }
+  } catch (error:unknown) {
+      const axiosErr=error as AxiosError<{message?:string}>;
+      const msg=axiosErr.response?.data.message||"Loan Data can not fetch";
+      toast.error(msg);
+      return null;
   }
 }
