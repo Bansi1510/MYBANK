@@ -63,6 +63,12 @@ export interface LoanEMIData {
   remaining_tenure: number;
   status: string;
 }
+
+export interface loanPaymentResposnes{
+  paid_amount:number,
+  remaining_balance:number,
+  payment_method:string
+}
 export const getLoanReqAPI=async():Promise<AllLoanRequest[]|[]>=>{
   try {
     const res=await API.get("new-loan-req");
@@ -120,11 +126,9 @@ export const updateLoanReqStatus=async(loan_id:string,action:string,reject_reaso
 
 export const getLoanPaymentDetailsAPI=async(policyNumber:string):Promise<LoanEMIData|null>=>{
   try {
-    console.log(policyNumber);
-    const res=await API.get(`${policyNumber}/payment-detail`);
+     const res=await API.get(`${policyNumber}/payment-detail`);
     if(res.data.status){
-    console.log(res.data.loan_summary);
-
+ 
       return res.data.data.loan_summary;
     }else{
       toast.error(res.data.message);
@@ -135,5 +139,23 @@ export const getLoanPaymentDetailsAPI=async(policyNumber:string):Promise<LoanEMI
       const msg=axiosErr.response?.data.message||"Loan Data can not fetch";
       toast.error(msg);
       return null;
+  }
+}
+
+export const payLoanEmiAPI=async(amount:number,payment_method:string,policy_number:string):Promise<loanPaymentResposnes|false>=>{
+  try {
+      const res=await API.post("payment",{amount,payment_method,policy_number});
+      if(res.data.status){
+        toast.success(res.data.message);
+        return res.data.data;
+      }else{
+        toast.error(res.data.message);
+        return false;
+      }
+  } catch (error:unknown) {
+      const axiosErr=error as AxiosError<{message?:string}>;
+      const msg=axiosErr.response?.data.message||"Loan  Payment can not ";
+      toast.error(msg);
+      return false;
   }
 }

@@ -621,7 +621,7 @@ export const loanPayment = async (req, res) => {
     const role = req.role;          // user | staff | admin
     const payerId = req.id;         // logged-in user
     const { amount, payment_method, policy_number } = req.body;
-
+    console.log(policy_number);
     if (!policy_number || !amount || amount <= 0) {
       return res.status(400).json({
         status: false,
@@ -720,14 +720,16 @@ export const loanPayment = async (req, res) => {
           principal_component,
           interest_component,
           remaining_balance,
-          payment_method
+          payment_method,
+          policy_number
         ) VALUES (
           ${loan.id},
           ${amount},
           ${amount},
           0,
           ${remainingBalance},
-          ${payment_method || "account_debit"}
+          ${payment_method || "account_debit"},
+          ${policy_number}
         )
       `,
 

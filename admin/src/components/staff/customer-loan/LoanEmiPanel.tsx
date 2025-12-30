@@ -1,14 +1,12 @@
 import React, { useState } from "react";
-import { getLoanPaymentDetailsAPI, type LoanEMIData } from "../../services/loan.api";
+import {
+  getLoanPaymentDetailsAPI,
+  payLoanEmiAPI,
+  type LoanEMIData,
+  type loanPaymentResposnes,
+} from "../../services/loan.api";
 
-/* =======================
-   INTERFACE
-======================= */
 
-
-/* =======================
-   COMPONENT
-======================= */
 const LoanEmiPanel: React.FC = () => {
   const [policyNumber, setPolicyNumber] = useState("");
   const [loan, setLoan] = useState<LoanEMIData | null>(null);
@@ -17,135 +15,98 @@ const LoanEmiPanel: React.FC = () => {
   const [amount, setAmount] = useState("");
   const [paymentMethod, setPaymentMethod] = useState("");
 
-  /* =======================
-     HANDLERS
-  ======================= */
+  // 🔹 NEW: payment result
+  const [paymentResult, setPaymentResult] = useState<loanPaymentResposnes | null>(
+    null
+  );
 
-  // Allow only numeric (string, no decimal)
   const handleAmountChange = (e: React.ChangeEvent<HTMLInputElement>) => {
-    const value = e.target.value;
-    if (/^\d*$/.test(value)) {
-      setAmount(value);
+    if (/^\d*$/.test(e.target.value)) {
+      setAmount(e.target.value);
     }
   };
 
   const getLoanDetails = async () => {
-
     const loanData = await getLoanPaymentDetailsAPI(policyNumber);
-    console.log(loanData);
     if (!loanData) return;
+
     setLoan(loanData);
     setShowPayForm(false);
+    setPaymentResult(null);
     setAmount("");
     setPaymentMethod("");
   };
 
-  // 🔹 MOCK: Pay EMI (Replace with API later)
-  const payEmi = () => {
-    // 👉 API CALL WILL COME HERE
-    // axios.post("/api/loan-payments/pay-emi", { policyNumber, amount, paymentMethod })
-
-    console.log({
-      policyNumber,
-      amount,
+  const payEmi = async () => {
+    const res = await payLoanEmiAPI(
+      Number(amount),
       paymentMethod,
+      policyNumber
+    );
+
+    if (!res) return;
+
+    // 🔹 SAVE PAYMENT RESULT
+    setPaymentResult({
+      paid_amount: res.paid_amount,
+      remaining_balance: res.remaining_balance,
+      payment_method: res.payment_method,
     });
 
-    alert("EMI paid successfully (mock)");
+
   };
 
-  /* =======================
-     JSX
-  ======================= */
-
   return (
-    <div className="max-w-3xl mx-auto mt-10 p-6 border rounded-md text-sm">
+    <div className="max-w-2xl mx-auto mt-8 p-4 border rounded text-sm">
+      <h2 className="font-semibold mb-3">Loan EMI Payment</h2>
 
-      {/* Header */}
-      <h2 className="text-lg font-semibold mb-4">
-        Loan EMI Payment
-      </h2>
-
-      {/* Policy Number Input */}
+      {/* Policy input */}
       <div className="flex gap-2 mb-4">
         <input
-          className="flex-1 border rounded px-3 py-2"
-          placeholder="Enter Policy Number"
+          className="flex-1 border rounded px-2 py-1"
+          placeholder="Policy Number"
           value={policyNumber}
           onChange={(e) => setPolicyNumber(e.target.value)}
         />
         <button
-          className="px-4 py-2 bg-blue-600 text-white rounded"
+          className="px-3 py-1 bg-blue-600 text-white rounded"
           onClick={getLoanDetails}
         >
-          Get Details
+          Get
         </button>
       </div>
 
-      {/* =======================
-          LOAN DETAILS
-      ======================= */}
+      {/* Loan details */}
       {loan && (
-        <div className="border rounded p-4 space-y-4">
-
-          {/* Top Info */}
-          <div className="flex justify-between items-center">
+        <div className="border rounded p-3 space-y-3">
+          <div className="flex justify-between">
             <div>
-              <p className="text-gray-500">Policy Number</p>
-              <p className="font-medium">{loan.policy_number}</p>
+              <p className="text-gray-500">Policy</p>
+              <p>{loan.policy_number}</p>
             </div>
-            <span className="px-2 py-1 text-xs border rounded">
+            <span className="text-xs border px-2 rounded">
               {loan.status.toUpperCase()}
             </span>
           </div>
 
-          {/* Loan Summary */}
-          <div className="grid grid-cols-1 sm:grid-cols-2 gap-3">
-            <div>
-              <p className="text-gray-500">Loan Type</p>
-              <p className="font-medium capitalize">{loan.loan_type}</p>
-            </div>
-            <div>
-              <p className="text-gray-500">Interest Rate</p>
-              <p className="font-medium">{loan.interest_rate}%</p>
-            </div>
-            <div>
-              <p className="text-gray-500">Loan Amount</p>
-              <p className="font-medium">₹{loan.original_loan_amount}</p>
-            </div>
-            <div>
-              <p className="text-gray-500">Tenure</p>
-              <p className="font-medium">{loan.tenure} months</p>
-            </div>
+          <div className="grid grid-cols-2 gap-2">
+            <Info label="Loan Type" value={loan.loan_type} />
+            <Info label="Interest" value={`${loan.interest_rate}%`} />
+            <Info label="Loan Amount" value={`₹${loan.original_loan_amount}`} />
+            <Info label="Tenure" value={`${loan.tenure} months`} />
+            <Info
+              label="Monthly EMI"
+              value={`₹${loan.monthly_emi}`}
+              highlight
+            />
+            <Info
+              label="Remaining"
+              value={`₹${loan.remaining_amount}`}
+            />
           </div>
 
-          {/* EMI Info */}
-          <div className="border-t pt-3 grid grid-cols-1 sm:grid-cols-2 gap-3">
-            <div>
-              <p className="text-gray-500">Monthly EMI</p>
-              <p className="font-semibold text-blue-600">
-                ₹{loan.monthly_emi}
-              </p>
-            </div>
-            <div>
-              <p className="text-gray-500">Remaining Amount</p>
-              <p className="font-semibold">
-                ₹{loan.remaining_amount}
-              </p>
-            </div>
-            <div>
-              <p className="text-gray-500">Paid EMIs</p>
-              <p className="font-medium">{loan.paid_emis}</p>
-            </div>
-            <div>
-              <p className="text-gray-500">Remaining Tenure</p>
-              <p className="font-medium">{loan.remaining_tenure} months</p>
-            </div>
-          </div>
-
-          {/* Action */}
           <button
-            className="w-full bg-green-600 text-white py-2 rounded"
+            className="w-full bg-green-600 text-white py-1 rounded"
             onClick={() => setShowPayForm(true)}
           >
             Pay EMI
@@ -153,58 +114,89 @@ const LoanEmiPanel: React.FC = () => {
         </div>
       )}
 
-      {/* =======================
-          PAY EMI FORM
-      ======================= */}
+      {/* Pay form */}
       {showPayForm && loan && (
-        <div className="mt-4 border rounded p-4 space-y-3">
-          <h3 className="font-semibold">Pay EMI</h3>
+        <div className="mt-3 border rounded p-3 space-y-2">
+          <input
+            className="w-full border px-2 py-1 bg-gray-100"
+            value={loan.policy_number}
+            disabled
+          />
 
-          <div>
-            <p className="text-gray-500 mb-1">Policy Number</p>
-            <input
-              className="w-full border rounded px-3 py-2 bg-gray-100"
-              value={loan.policy_number}
-              disabled
-            />
-          </div>
+          <input
+            className="w-full border px-2 py-1"
+            placeholder="EMI Amount"
+            value={amount}
+            onChange={handleAmountChange}
+          />
 
-          <div>
-            <p className="text-gray-500 mb-1">Amount</p>
-            <input
-              className="w-full border rounded px-3 py-2"
-              placeholder="Enter EMI Amount"
-              value={amount}
-              onChange={handleAmountChange}
-            />
-          </div>
-
-          <div>
-            <p className="text-gray-500 mb-1">Payment Method</p>
-            <select
-              className="w-full border rounded px-3 py-2"
-              value={paymentMethod}
-              onChange={(e) => setPaymentMethod(e.target.value)}
-            >
-              <option value="">Select Payment Method</option>
-              <option value="CASH">Cash</option>
-              <option value="UPI">UPI</option>
-              <option value="CARD">Card</option>
-              <option value="NET_BANKING">Net Banking</option>
-            </select>
-          </div>
+          <select
+            className="w-full border px-2 py-1"
+            value={paymentMethod}
+            onChange={(e) => setPaymentMethod(e.target.value)}
+          >
+            <option value="">Payment Method</option>
+            <option value="cash">Cash</option>
+            <option value="upi">UPI</option>
+            <option value="card">Card</option>
+            <option value="account_debit">Account Debit</option>
+          </select>
 
           <button
-            className="w-full bg-blue-600 text-white py-2 rounded"
+            className="w-full bg-blue-600 text-white py-1 rounded"
             onClick={payEmi}
           >
-            Pay EMI
+            Confirm Payment
           </button>
         </div>
       )}
 
+      {/* ✅ PAYMENT SUCCESS SUMMARY */}
+      {paymentResult && (
+        <div className="mt-4 border rounded p-3 bg-green-50">
+          <p className="font-semibold text-green-700 mb-2">
+            Payment Successful
+          </p>
+
+          <div className="space-y-1">
+            <Summary label="Paid Amount" value={`₹${paymentResult.paid_amount}`} />
+            <Summary
+              label="Remaining Balance"
+              value={`₹${paymentResult.remaining_balance}`}
+            />
+            <Summary
+              label="Payment Method"
+              value={paymentResult.payment_method.toUpperCase()}
+            />
+          </div>
+        </div>
+      )}
     </div>
   );
 };
+
+/* 🔹 Small reusable helpers (clean & lightweight) */
+
+const Info = ({
+  label,
+  value,
+  highlight,
+}: {
+  label: string;
+  value: string;
+  highlight?: boolean;
+}) => (
+  <div>
+    <p className="text-gray-500">{label}</p>
+    <p className={highlight ? "font-semibold text-blue-600" : ""}>{value}</p>
+  </div>
+);
+
+const Summary = ({ label, value }: { label: string; value: string }) => (
+  <div className="flex justify-between">
+    <span className="text-gray-600">{label}</span>
+    <span className="font-medium">{value}</span>
+  </div>
+);
 
 export default LoanEmiPanel;
