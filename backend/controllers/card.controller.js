@@ -77,21 +77,43 @@ export const requestDebitCard = async (req, res) => {
 
 
 export const getNewCardReqs = async (req, res) => {
+  const { status } = req.params;
+
   try {
-    const cardRequests = await sql`
-      SELECT 
-        id,
-        customer_id,
-        account_number,
-        card_type,
-        card_brand,
-        card_variant,
-        request_status,
-        requested_at
-      FROM card_requests
-      WHERE request_status = 'pending'
-      ORDER BY requested_at DESC
-    `;
+    let cardRequests;
+
+    if (status) {
+      // 🔹 Filter by status
+      cardRequests = await sql`
+        SELECT 
+          id,
+          customer_id,
+          account_number,
+          card_type,
+          card_brand,
+          card_variant,
+          request_status,
+          requested_at
+        FROM card_requests
+        WHERE request_status = ${status}
+        ORDER BY requested_at DESC
+      `;
+    } else {
+      // 🔹 Fetch all requests
+      cardRequests = await sql`
+        SELECT 
+          id,
+          customer_id,
+          account_number,
+          card_type,
+          card_brand,
+          card_variant,
+          request_status,
+          requested_at
+        FROM card_requests
+        ORDER BY requested_at DESC
+      `;
+    }
 
     return res.status(200).json({
       status: true,
@@ -165,7 +187,7 @@ MYBANK Card Services
 ===================================================== */
 
 export const cardRequestAction = async (req, res) => {
-  const { role } = req; // staff | admin
+  const { role } = req.role; // staff | admin
   const { card_req_id, action } = req.body; // approve | reject
 
   try {
@@ -310,6 +332,81 @@ export const cardRequestAction = async (req, res) => {
     return res.status(500).json({
       status: false,
       message: "Internal server error",
+    });
+  }
+};
+
+export const getCardsSummary = async (req, res) => {
+  const { status } = req.query; // optional filter
+
+  try {
+    const cards = await sql`
+      SELECT 
+        c.account_number,
+        c.last4,
+        c.status,
+        c.issued_at,
+        c.expiry_month,
+        c.expiry_year,
+        u.full_name AS customer_name
+      FROM cards c
+      JOIN users u ON u.id = c.customer_id
+      WHERE (${status} IS NULL OR c.status = ${status})
+      ORDER BY c.issued_at DESC
+    `;
+
+    return res.status(200).json({
+      status: true,
+      cards,
+    });
+
+  } catch (error) {
+    console.error("Get Cards Summary Error:", error);
+    return res.status(500).json({
+      status: false,
+      message: "Unable to fetch cards summary",
+    });
+  }
+};
+
+export const getCardDetails = async (req, res) => {
+  const { account_number } = req.params;
+
+  if (!account_number) {
+    return res.status(400).json({
+      status: false,
+      message: "account_number is required",
+    });
+  }
+
+  try {
+    const [card] = await sql`
+      SELECT 
+        c.*,
+        u.full_name AS customer_name,
+        u.email
+      FROM cards c
+      JOIN users u ON u.id = c.customer_id
+      WHERE c.account_number = ${account_number}
+    `;
+
+    if (!card) {
+      return res.status(404).json({
+        status: false,
+        message: "Card not found",
+      });
+    }
+
+    return res.status(200).json({
+      status: true,
+      card,
+    });
+
+  } catch (error) {
+    console.error("Get Card Details Error:", error);
+    return res.status(500).json({
+      status: false,
+      message: "Unable to fetch card details",
     });
   }
 };
