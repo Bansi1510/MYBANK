@@ -106,9 +106,29 @@ export const getNewCardReqs = async (req, res) => {
   }
 };
 
-export const updateLoanStatus = async (req, res) => {
+export const updateCardReqStatus = async (req, res) => {
   try {
+    const role = req.role;
+    const { status, card_req_id } = req.body;
+    const card_req = await sql`SELECT * FROM card_requests WHERE id=${card_req_id}`;
 
+    if (card_req.length === 0) {
+      return res.status(400).json({
+        status: false,
+        message: "Card req can not found",
+      })
+    }
+    if (role === 'staff') {
+      await sql`update card_requests SET request_status=${status} WHERE id=${card_req_id}`;
+
+      return res.status(200).json({
+        status: true,
+        message: `Request is ${status}`
+      })
+    }
+    if (role === 'admin' && status !== 'pending') {
+      await
+    }
   } catch (error) {
     console.error("Get Card Requests Error:", error);
     return res.status(500).json({
