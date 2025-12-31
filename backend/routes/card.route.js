@@ -1,8 +1,8 @@
 import express from "express";
-import { isAuthenticated } from "../middleware/isAutheticated";
-import { isUser } from "../middleware/isUser";
-import { cardRequestAction, getCardDetails, getCardsSummary, getNewCardReqs, requestDebitCard } from "../controllers/card.controller";
-import { isAdminOrStaff } from "../middleware/isAdminOrStaff";
+import { isAuthenticated } from "../middleware/isAutheticated.js";
+import { isUser } from "../middleware/isUser.js";
+import { cardRequestAction, getCardDetails, getCardsSummary, getNewCardReqs, requestDebitCard } from "../controllers/card.controller.js";
+import { isAdminOrStaff } from "../middleware/isAdminOrStaff.js";
 
 
 const CardRouter = express.Router();

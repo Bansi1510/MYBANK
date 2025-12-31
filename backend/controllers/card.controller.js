@@ -5,6 +5,7 @@ import crypto from "crypto";
 export const requestDebitCard = async (req, res) => {
   try {
     const userId = req.id;
+    console.log(userId)
     const { account_number, card_type, card_brand, card_variant } = req.body;
 
     if (!account_number || !card_type || !card_brand || !card_variant) {
@@ -19,7 +20,7 @@ export const requestDebitCard = async (req, res) => {
       SELECT account_number 
       FROM accounts 
       WHERE account_number = ${account_number}
-      AND customer_id = ${userId}
+      AND  user_id = ${userId}
     `;
 
     if (account.length === 0) {
@@ -187,9 +188,8 @@ MYBANK Card Services
 ===================================================== */
 
 export const cardRequestAction = async (req, res) => {
-  const { role } = req.role; // staff | admin
+  const role = req.role; // staff | admin
   const { card_req_id, action } = req.body; // approve | reject
-
   try {
     if (!card_req_id || !action) {
       return res.status(400).json({
@@ -203,7 +203,7 @@ export const cardRequestAction = async (req, res) => {
       SELECT 
         cr.*,
         u.email,
-        u.full_name
+        u.name
       FROM card_requests cr
       JOIN users u ON u.id = cr.customer_id
       WHERE cr.id = ${card_req_id}
@@ -337,23 +337,44 @@ export const cardRequestAction = async (req, res) => {
 };
 
 export const getCardsSummary = async (req, res) => {
-  const { status } = req.query; // optional filter
+  const { status } = req.query;
 
   try {
-    const cards = await sql`
-      SELECT 
-        c.account_number,
-        c.last4,
-        c.status,
-        c.issued_at,
-        c.expiry_month,
-        c.expiry_year,
-        u.full_name AS customer_name
-      FROM cards c
-      JOIN users u ON u.id = c.customer_id
-      WHERE (${status} IS NULL OR c.status = ${status})
-      ORDER BY c.issued_at DESC
-    `;
+    let cards;
+
+    if (status) {
+      // Filter by status
+      cards = await sql`
+    SELECT 
+      c.account_number,
+      c.last4,
+      c.status,
+      c.issued_at,
+      c.expiry_month,
+      c.expiry_year,
+      u.name AS customer_name
+    FROM cards c
+    JOIN users u ON u.id = c.customer_id
+    WHERE c.status = ${status}
+    ORDER BY c.issued_at DESC
+  `;
+    } else {
+      // No filter, get all
+      cards = await sql`
+    SELECT 
+      c.account_number,
+      c.last4,
+      c.status,
+      c.issued_at,
+      c.expiry_month,
+      c.expiry_year,
+      u.name AS customer_name
+    FROM cards c
+    JOIN users u ON u.id = c.customer_id
+    ORDER BY c.issued_at DESC
+  `;
+    }
+
 
     return res.status(200).json({
       status: true,
@@ -383,7 +404,7 @@ export const getCardDetails = async (req, res) => {
     const [card] = await sql`
       SELECT 
         c.*,
-        u.full_name AS customer_name,
+        u.name AS customer_name,
         u.email
       FROM cards c
       JOIN users u ON u.id = c.customer_id
