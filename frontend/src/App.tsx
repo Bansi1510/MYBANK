@@ -21,6 +21,7 @@ import UpiSuccess from "./components/services_page/upi/UpiSuccess";
 import Loans from "./components/pages/Loans";
 import LoanApplicationPage from "./components/Loans/LoanApplicationPage";
 import LoanPaymentForm from "./components/services_page/loan/LoanPaymentForm";
+import Cards from "./components/pages/Cards";
 
 const appRouter = createBrowserRouter([
   {
@@ -106,7 +107,13 @@ const appRouter = createBrowserRouter([
   {
     path: "/loan/:loanType",
     element: <LoanApplicationPage />
+  },
+  {
+    path: "/cards",
+    element: <Cards />
   }
+
+
 ]);
 
 

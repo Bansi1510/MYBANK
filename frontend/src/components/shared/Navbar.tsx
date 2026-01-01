@@ -36,6 +36,7 @@ const Navbar: React.FC = () => {
           <Link className="hover:text-blue-700 transition-all" to="/services">Services</Link>
           <Link className="hover:text-blue-700 transition-all" to="/accounts">Accounts</Link>
           <Link className="hover:text-blue-700 transition-all" to="/loans">Loans</Link>
+          <Link className="hover:text-blue-700 transition-all" to="/cards">Cards</Link>
           <Link className="hover:text-blue-700 transition-all" to="/contact">Contact</Link>
         </div>
 
