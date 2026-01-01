@@ -22,6 +22,7 @@ import Loans from "./components/pages/Loans";
 import LoanApplicationPage from "./components/Loans/LoanApplicationPage";
 import LoanPaymentForm from "./components/services_page/loan/LoanPaymentForm";
 import Cards from "./components/pages/Cards";
+import CardRequestForm from "./components/cards/CardRequestForm";
 
 const appRouter = createBrowserRouter([
   {
@@ -111,6 +112,10 @@ const appRouter = createBrowserRouter([
   {
     path: "/cards",
     element: <Cards />
+  },
+  {
+    path: "/cards/new-request",
+    element: <CardRequestForm />
   }
 
 
