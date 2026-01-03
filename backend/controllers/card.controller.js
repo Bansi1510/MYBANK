@@ -4,9 +4,15 @@ import crypto from "crypto";
 
 export const requestDebitCard = async (req, res) => {
   try {
-    const userId = req.id;
-    console.log(userId)
-    const { account_number, card_type, card_brand, card_variant } = req.body;
+    const loggedInUserId = req.id;
+    const role = req.role; // "customer" | "staff"
+
+    const {
+      account_number,
+      card_type,
+      card_brand,
+      card_variant,
+    } = req.body;
 
     if (!account_number || !card_type || !card_brand || !card_variant) {
       return res.status(400).json({
@@ -15,58 +21,86 @@ export const requestDebitCard = async (req, res) => {
       });
     }
 
-    /* 1️⃣ Check account belongs to user */
-    const account = await sql`
-      SELECT account_number 
-      FROM accounts 
+    let targetCustomerId;
+
+    /* 1️⃣ Resolve customer_id */
+    if (role === "customer") {
+      targetCustomerId = loggedInUserId;
+    } else {
+      // Staff flow: get customer from account
+      const account = await sql`
+        SELECT user_id
+        FROM accounts
+        WHERE account_number = ${account_number}
+      `;
+
+      if (account.length === 0) {
+        return res.status(404).json({
+          status: false,
+          message: "Account not found",
+        });
+      }
+
+      targetCustomerId = account[0].user_id;
+    }
+
+    /* 2️⃣ Check account belongs to customer */
+    const accountCheck = await sql`
+      SELECT 1
+      FROM accounts
       WHERE account_number = ${account_number}
-      AND  user_id = ${userId}
+      AND user_id = ${targetCustomerId}
     `;
 
-    if (account.length === 0) {
+    if (accountCheck.length === 0) {
       return res.status(403).json({
         status: false,
         message: "Invalid account number",
       });
     }
 
-    /* 2️⃣ Check existing pending request */
+    /* 3️⃣ Check existing pending request */
     const existingReq = await sql`
-      SELECT 1 FROM card_requests 
-      WHERE customer_id = ${userId}
+      SELECT 1
+      FROM card_requests
+      WHERE customer_id = ${targetCustomerId}
       AND request_status = 'pending'
     `;
 
     if (existingReq.length > 0) {
       return res.status(409).json({
         status: false,
-        message: "You already have a pending card request",
+        message: "A pending card request already exists",
       });
     }
 
-    /* 3️⃣ Insert request */
+    /* 4️⃣ Insert card request */
     await sql`
       INSERT INTO card_requests (
         customer_id,
         account_number,
         card_type,
         card_brand,
-        card_variant
+        card_variant,
+        requested_by
       )
       VALUES (
-        ${userId},
+        ${targetCustomerId},
         ${account_number},
         ${card_type},
         ${card_brand},
-        ${card_variant}
+        ${card_variant},
+        ${role}
       )
     `;
 
     return res.status(201).json({
       status: true,
-      message: "Card request submitted successfully",
+      message:
+        role === "staff"
+          ? "Card request submitted by staff"
+          : "Card request submitted successfully",
     });
-
   } catch (error) {
     console.error("Card Request Error:", error);
     return res.status(500).json({
@@ -75,6 +109,7 @@ export const requestDebitCard = async (req, res) => {
     });
   }
 };
+
 
 
 export const getNewCardReqs = async (req, res) => {

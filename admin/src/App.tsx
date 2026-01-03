@@ -23,6 +23,8 @@ import LoanRequestList from './components/common/LoanRequestList'
 import SingleLoanRequest from './components/staff/customer-loan/SingleLoanRequest'
 import AdminSingleLoanRequest from './components/admin/loan-approve/AdminSingleLoanRequest'
 import LoanEmiPanel from './components/staff/customer-loan/LoanEmiPanel'
+import CustomerCards from './components/staff/CustomerCards'
+import NewCardRequest from './components/staff/customer-cards/NewCardRequest'
 
 
 
@@ -95,6 +97,13 @@ const appRouter = createBrowserRouter([
           { path: "loan-applications/details/:loan_id", element: <SingleLoanRequest /> },
           { path: "loan-emi-payment", element: <LoanEmiPanel /> }
 
+        ]
+      },
+      {
+        path: "cutomer-card",
+        element: <CustomerCards />,
+        children: [
+          { path: "new-card", element: <NewCardRequest /> }
         ]
       },
       { path: "kyc", element: <KYCVerification /> },
