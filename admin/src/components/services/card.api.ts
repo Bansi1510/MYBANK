@@ -58,3 +58,20 @@ export const allCardReqs=async():Promise<CardRequest[]|[]>=>{
      return  [];
   }
 }
+export const updateCardReqStatus=async(card_req_id:string,action:string):Promise<boolean>=>{
+  try {
+    const res=await API.patch("card-req/update-status",{card_req_id,action});
+    if(res.data.status){
+      toast.success(res.data.message);
+      return true;
+    }else{
+      toast.error(res.data.message);
+      return false;
+    }
+  } catch (error:unknown) {
+    const axiosErr=error as AxiosError<{message?:string}>;
+     const msg=axiosErr.response?.data.message||"can not fetch requests";
+     toast.error(msg);
+     return false;
+  }
+}

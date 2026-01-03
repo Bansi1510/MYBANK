@@ -226,6 +226,7 @@ MYBANK Card Services
 
 export const cardRequestAction = async (req, res) => {
   const role = req.role; // staff | admin
+  console.log(role);
   const { card_req_id, action } = req.body; // approve | reject
   try {
     if (!card_req_id || !action) {
@@ -255,7 +256,9 @@ export const cardRequestAction = async (req, res) => {
 
     /* ===================== STAFF ===================== */
     if (role === "staff") {
-      if (action === "approve") {
+      if (action === "approved") {
+        console.log("h1llo");
+
         await sql`
           UPDATE card_requests
           SET request_status = 'under_process'
@@ -268,7 +271,7 @@ export const cardRequestAction = async (req, res) => {
         });
       }
 
-      if (action === "reject") {
+      if (action === "rejected") {
         await sql`
           UPDATE card_requests
           SET request_status = 'rejected'

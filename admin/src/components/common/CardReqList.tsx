@@ -1,24 +1,23 @@
 import React, { useEffect, useState } from "react";
-import { allCardReqs, type CardRequest } from "../services/card.api";
+import { allCardReqs, updateCardReqStatus, type CardRequest } from "../services/card.api";
 
 
 
 const CardReqList: React.FC = () => {
   const [cardRequests, setCardRequests] = useState<CardRequest[]>([]);
+  const fetchCard = async () => {
+    const cardReq = await allCardReqs();
+    setCardRequests(cardReq);
+  }
   useEffect(() => {
-    const fetchCard = async () => {
-      const cardReq = await allCardReqs();
-      setCardRequests(cardReq);
-    }
     fetchCard();
-  }, []);
+  }, [])
 
-  const updateStatus = (id: string, status: "approved" | "rejected") => {
-    setCardRequests((prev) =>
-      prev.map((req) =>
-        req.id === id ? { ...req, request_status: status } : req
-      )
-    );
+  const updateStatus = async (id: string, status: "approved" | "rejected") => {
+    const res = await updateCardReqStatus(id, status);
+    if (res) {
+      fetchCard();
+    }
   };
 
   return (
