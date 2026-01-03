@@ -25,6 +25,7 @@ import AdminSingleLoanRequest from './components/admin/loan-approve/AdminSingleL
 import LoanEmiPanel from './components/staff/customer-loan/LoanEmiPanel'
 import CustomerCards from './components/staff/CustomerCards'
 import NewCardRequest from './components/staff/customer-cards/NewCardRequest'
+import CardReqList from './components/common/CardReqList'
 
 
 
@@ -103,7 +104,8 @@ const appRouter = createBrowserRouter([
         path: "cutomer-card",
         element: <CustomerCards />,
         children: [
-          { path: "new-card", element: <NewCardRequest /> }
+          { path: "new-card", element: <NewCardRequest /> },
+          { path: "all-req-cards", element: <CardReqList /> }
         ]
       },
       { path: "kyc", element: <KYCVerification /> },

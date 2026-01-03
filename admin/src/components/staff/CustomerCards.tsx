@@ -7,7 +7,7 @@ const CustomerCards: React.FC = () => {
 
   const actions = [
     { label: "New Card Request", desc: "Request a new debit or credit card", link: "new-card" },
-    { label: "View All Cards", desc: "See all issued customer cards", link: "all-cards" },
+    { label: "View All Cards", desc: "See all issued customer cards", link: "all-req-cards" },
     { label: "Block / Unblock Card", desc: "Manage card security status", link: "block-card" },
     { label: "Replace Card", desc: "Request replacement for lost or damaged card", link: "replace-card" },
     { label: "Card PIN Services", desc: "Generate or reset card PIN", link: "card-pin" },
@@ -39,15 +39,10 @@ const CustomerCards: React.FC = () => {
       )}
 
       {/* Child routes render here */}
-      <div
-        className={
-          isChildActive
-            ? "min-h-screen flex items-center justify-center bg-gray-50"
-            : "mt-6"
-        }
-      >
+      <div className={isChildActive ? "min-h-screen bg-gray-50 p-4" : "mt-6"}>
         <Outlet />
       </div>
+
     </div>
   );
 };

@@ -12,6 +12,7 @@ const NewCardRequest: React.FC = () => {
 
   const [loading, setLoading] = useState(false);
   const navigate = useNavigate();
+
   const handleChange = (
     e: React.ChangeEvent<HTMLInputElement | HTMLSelectElement>
   ) => {
@@ -29,17 +30,14 @@ const NewCardRequest: React.FC = () => {
     e.preventDefault();
     setLoading(true);
 
-
     const res = await applyNewCardReq(form);
-    if (res) {
-      navigate(-1);
-    }
+    if (res) navigate(-1);
 
     setLoading(false);
   };
 
   return (
-    <div className="w-full max-w-3xl bg-white rounded-xl shadow-lg p-8">
+    <div className="w-full bg-white rounded-xl shadow p-10">
       <h2 className="text-2xl font-semibold mb-1">
         New Card Request
       </h2>
@@ -47,7 +45,7 @@ const NewCardRequest: React.FC = () => {
         Staff initiated card request using customer account number
       </p>
 
-      <form onSubmit={handleSubmit} className="grid grid-cols-1 md:grid-cols-2 gap-6">
+      <form className="grid grid-cols-1 md:grid-cols-2 gap-6" onSubmit={handleSubmit}>
         {/* Account Number */}
         <div className="md:col-span-2">
           <label className="text-sm text-gray-600">
@@ -61,7 +59,7 @@ const NewCardRequest: React.FC = () => {
             required
             maxLength={15}
             placeholder="Enter account number"
-            className="w-full border rounded-md p-3 mt-1 focus:outline-none focus:ring-2 focus:ring-indigo-500"
+            className="w-full border rounded-md p-3 mt-1 focus:ring-2 focus:ring-indigo-500"
           />
           <p className="text-xs text-gray-400 mt-1">
             Numbers only (max 15 digits)
@@ -70,9 +68,7 @@ const NewCardRequest: React.FC = () => {
 
         {/* Card Type */}
         <div>
-          <label className="text-sm text-gray-600">
-            Card Type
-          </label>
+          <label className="text-sm text-gray-600">Card Type</label>
           <select
             name="card_type"
             value={form.card_type}
@@ -86,9 +82,7 @@ const NewCardRequest: React.FC = () => {
 
         {/* Card Brand */}
         <div>
-          <label className="text-sm text-gray-600">
-            Card Brand
-          </label>
+          <label className="text-sm text-gray-600">Card Brand</label>
           <select
             name="card_brand"
             value={form.card_brand}
@@ -103,9 +97,7 @@ const NewCardRequest: React.FC = () => {
 
         {/* Card Variant */}
         <div className="md:col-span-2">
-          <label className="text-sm text-gray-600">
-            Card Variant
-          </label>
+          <label className="text-sm text-gray-600">Card Variant</label>
           <select
             name="card_variant"
             value={form.card_variant}
@@ -128,8 +120,6 @@ const NewCardRequest: React.FC = () => {
             {loading ? "Submitting..." : "Submit Card Request"}
           </button>
         </div>
-
-
       </form>
     </div>
   );

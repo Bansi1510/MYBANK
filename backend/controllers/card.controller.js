@@ -5,15 +5,11 @@ import crypto from "crypto";
 export const requestDebitCard = async (req, res) => {
   try {
     const loggedInUserId = req.id;
-    const role = req.role; // "customer" | "staff"
+    const role = req.role; // "user" | "staff"
 
-    const {
-      account_number,
-      card_type,
-      card_brand,
-      card_variant,
-    } = req.body;
+    const { account_number, card_type, card_brand, card_variant } = req.body;
 
+    // 1️⃣ Validate input
     if (!account_number || !card_type || !card_brand || !card_variant) {
       return res.status(400).json({
         status: false,
@@ -23,8 +19,9 @@ export const requestDebitCard = async (req, res) => {
 
     let targetCustomerId;
 
-    /* 1️⃣ Resolve customer_id */
-    if (role === "customer") {
+    // 2️⃣ Resolve customer_id
+    if (role === "user") {
+      // Logged-in user is the customer
       targetCustomerId = loggedInUserId;
     } else {
       // Staff flow: get customer from account
@@ -44,7 +41,7 @@ export const requestDebitCard = async (req, res) => {
       targetCustomerId = account[0].user_id;
     }
 
-    /* 2️⃣ Check account belongs to customer */
+    // 3️⃣ Check account belongs to customer
     const accountCheck = await sql`
       SELECT 1
       FROM accounts
@@ -59,12 +56,12 @@ export const requestDebitCard = async (req, res) => {
       });
     }
 
-    /* 3️⃣ Check existing pending request */
+    // 4️⃣ Check existing pending/under_process request
     const existingReq = await sql`
       SELECT 1
       FROM card_requests
       WHERE customer_id = ${targetCustomerId}
-      AND request_status = 'pending'
+      AND request_status IN ('pending', 'under_process')
     `;
 
     if (existingReq.length > 0) {
@@ -74,7 +71,10 @@ export const requestDebitCard = async (req, res) => {
       });
     }
 
-    /* 4️⃣ Insert card request */
+    // 5️⃣ Normalize role for DB
+    const requestedBy = role === "user" ? "customer" : "staff";
+
+    // 6️⃣ Insert card request
     await sql`
       INSERT INTO card_requests (
         customer_id,
@@ -82,7 +82,8 @@ export const requestDebitCard = async (req, res) => {
         card_type,
         card_brand,
         card_variant,
-        requested_by
+        requested_by,
+        request_status
       )
       VALUES (
         ${targetCustomerId},
@@ -90,14 +91,15 @@ export const requestDebitCard = async (req, res) => {
         ${card_type},
         ${card_brand},
         ${card_variant},
-        ${role}
+        ${requestedBy},
+        'pending'
       )
     `;
 
     return res.status(201).json({
       status: true,
       message:
-        role === "staff"
+        requestedBy === "staff"
           ? "Card request submitted by staff"
           : "Card request submitted successfully",
     });
