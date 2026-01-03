@@ -1,39 +1,17 @@
-import React, { useState } from "react";
+import React, { useEffect, useState } from "react";
+import { allCardReqs, type CardRequest } from "../services/card.api";
 
-type CardRequest = {
-  id: string;
-  customer_id: number;
-  account_number: string;
-  card_type: string;
-  card_brand: string;
-  card_variant: string;
-  request_status: string;
-  requested_at: string;
-};
+
 
 const CardReqList: React.FC = () => {
-  const [cardRequests, setCardRequests] = useState<CardRequest[]>([
-    {
-      id: "d252393c-97c3-428c-849d-43375522dfaa",
-      customer_id: 16,
-      account_number: "29100335821473",
-      card_type: "debit",
-      card_brand: "visa",
-      card_variant: "classic",
-      request_status: "pending",
-      requested_at: "2026-01-03T11:01:22.874Z",
-    },
-    {
-      id: "a1b2c3d4-1234-5678-90ab-cdef12345678",
-      customer_id: 17,
-      account_number: "29100335821474",
-      card_type: "credit",
-      card_brand: "mastercard",
-      card_variant: "gold",
-      request_status: "approved",
-      requested_at: "2026-01-02T09:20:10.000Z",
-    },
-  ]);
+  const [cardRequests, setCardRequests] = useState<CardRequest[]>([]);
+  useEffect(() => {
+    const fetchCard = async () => {
+      const cardReq = await allCardReqs();
+      setCardRequests(cardReq);
+    }
+    fetchCard();
+  }, []);
 
   const updateStatus = (id: string, status: "approved" | "rejected") => {
     setCardRequests((prev) =>
@@ -77,10 +55,10 @@ const CardReqList: React.FC = () => {
                 <td className="p-4">
                   <span
                     className={`px-3 py-1 rounded-full text-sm font-medium ${req.request_status === "pending"
-                        ? "bg-yellow-100 text-yellow-700"
-                        : req.request_status === "approved"
-                          ? "bg-green-100 text-green-700"
-                          : "bg-red-100 text-red-700"
+                      ? "bg-yellow-100 text-yellow-700"
+                      : req.request_status === "approved"
+                        ? "bg-green-100 text-green-700"
+                        : "bg-red-100 text-red-700"
                       }`}
                   >
                     {req.request_status}
