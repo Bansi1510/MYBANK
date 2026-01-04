@@ -7,7 +7,7 @@ const CardManagement: React.FC = () => {
 
   const actions = [
     { label: "Card Requests", desc: "Review and process card requests", link: "card-requests" },
-    { label: "Issued Cards", desc: "View all active customer cards", link: "issued-cards" },
+    { label: "Issued Cards", desc: "View all active customer cards", link: "all-cards" },
     { label: "Approve / Reject", desc: "Handle pending approvals", link: "approvals" },
     { label: "Block / Unblock", desc: "Control card security status", link: "block-unblock" },
     { label: "Limit Management", desc: "Update card usage limits", link: "card-limits" },

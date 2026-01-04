@@ -23,6 +23,17 @@ export interface formData{
   card_brand:string;
   card_variant:string;
 }
+
+export interface Card  {
+  id: string;
+  account_number: string;
+  last4: string;
+  status: "active" | "inactive" | "blocked";
+  issued_at: string;
+  expiry_month: number;
+  expiry_year: number;
+  customer_name: string;
+};
 export const applyNewCardReq=async(formData:formData):Promise<boolean>=>{
   try {
     const res=await API.post("new-card-req",formData);
@@ -73,5 +84,22 @@ export const updateCardReqStatus=async(card_req_id:string,action:string):Promise
      const msg=axiosErr.response?.data.message||"can not fetch requests";
      toast.error(msg);
      return false;
+  }
+}
+
+export const allCards=async():Promise<Card[]|[]>=>{
+  try {
+    const res=await API.get("all-cards");
+    if(res.data.status){
+      return res.data.cards;
+    }else{
+      toast.error(res.data.message);
+      return [];
+    }
+  } catch (error:unknown) {
+    const axiosErr=error as AxiosError<{message?:string}>;
+     const msg=axiosErr.response?.data.message||"can not fetch  Cards ";
+     toast.error(msg);
+     return [];
   }
 }

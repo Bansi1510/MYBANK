@@ -289,7 +289,7 @@ export const cardRequestAction = async (req, res) => {
 
     /* ===================== ADMIN ===================== */
     if (role === "admin") {
-      if (action === "approve") {
+      if (action === "approved") {
         // 🔐 Generate card details (ONCE)
         const fullCardNumber = generateCardNumber(); // 12 digits
         const last4 = fullCardNumber.slice(-4);
@@ -346,7 +346,7 @@ export const cardRequestAction = async (req, res) => {
         });
       }
 
-      if (action === "reject") {
+      if (action === "rejected") {
         await sql`
           UPDATE card_requests
           SET request_status = 'rejected'
@@ -386,6 +386,7 @@ export const getCardsSummary = async (req, res) => {
       // Filter by status
       cards = await sql`
     SELECT 
+      c.id,
       c.account_number,
       c.last4,
       c.status,
@@ -402,6 +403,7 @@ export const getCardsSummary = async (req, res) => {
       // No filter, get all
       cards = await sql`
     SELECT 
+      c.id,
       c.account_number,
       c.last4,
       c.status,

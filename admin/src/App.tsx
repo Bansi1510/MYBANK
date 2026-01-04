@@ -27,6 +27,8 @@ import CustomerCards from './components/staff/CustomerCards'
 import NewCardRequest from './components/staff/customer-cards/NewCardRequest'
 import CardReqList from './components/common/CardReqList'
 import CardManagement from './components/admin/CardManagement'
+import AdminCardRequestList from './components/admin/card-management/AdminCardRequestList'
+import AllCardsList from './components/common/AllCardsList'
 
 
 
@@ -78,7 +80,11 @@ const appRouter = createBrowserRouter([
       },
       {
         path: "card-management",
-        element: <CardManagement />
+        element: <CardManagement />,
+        children: [
+          { path: "card-requests", element: <AdminCardRequestList /> },
+          { path: "all-cards", element: <AllCardsList /> }
+        ]
       }
     ],
   },
