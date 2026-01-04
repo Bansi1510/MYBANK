@@ -26,6 +26,7 @@ import LoanEmiPanel from './components/staff/customer-loan/LoanEmiPanel'
 import CustomerCards from './components/staff/CustomerCards'
 import NewCardRequest from './components/staff/customer-cards/NewCardRequest'
 import CardReqList from './components/common/CardReqList'
+import CardManagement from './components/admin/CardManagement'
 
 
 
@@ -75,6 +76,10 @@ const appRouter = createBrowserRouter([
         ]
 
       },
+      {
+        path: "card-management",
+        element: <CardManagement />
+      }
     ],
   },
 

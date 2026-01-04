@@ -4,7 +4,7 @@ import { NavLink } from "react-router-dom";
 const sidebarOptions = [
   { name: "Accounts Management", path: "accounts" },
   { name: "Staff Management", path: "staff" },
-  { name: "Customer KYC", path: "kyc" },
+  { name: "Card Mangement", path: "card-management" },
   { name: "All Transactions", path: "transactions" },
   { name: "Loan Approval", path: "loan" },
   { name: "Reports", path: "reports" },
