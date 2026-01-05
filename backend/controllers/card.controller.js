@@ -474,3 +474,85 @@ export const getCardDetails = async (req, res) => {
   }
 };
 
+export const changeCardStatus = async (req, res) => {
+  try {
+    const { id, action } = req.body;
+    const userId = req.id;
+    const role = req.role;
+
+    const allowedStatus = ["active", "blocked", "inactive"];
+
+    if (!id || !action) {
+      return res.status(400).json({
+        status: false,
+        message: "id and action are required",
+      });
+    }
+
+    if (!allowedStatus.includes(action)) {
+      return res.status(400).json({
+        status: false,
+        message: "Invalid card status",
+      });
+    }
+
+    const [card] = await sql`SELECT * FROM cards WHERE id=${id}`;
+
+    if (!card) {
+      return res.status(404).json({
+        status: false,
+        message: "Card not found",
+      });
+    }
+
+    if (role === "user") {
+      if (card.customer_id !== userId) {
+        return res.status(403).json({
+          status: false,
+          message: "You can modify only your own card",
+        });
+      }
+
+      if (action !== "blocked") {
+        return res.status(403).json({
+          status: false,
+          message: "User can only block their card",
+        });
+      }
+    }
+
+    if (action === "active") {
+      await sql`
+        UPDATE cards 
+        SET status=${action}, activated_at=NOW()
+        WHERE id=${id}
+      `;
+    } else if (action === "blocked") {
+      await sql`
+        UPDATE cards 
+        SET status=${action}, blocked_at=NOW()
+        WHERE id=${id}
+      `;
+    } else {
+      await sql`
+        UPDATE cards 
+        SET status=${action}
+        WHERE id=${id}
+      `;
+    }
+
+    return res.status(200).json({
+      status: true,
+      message: "Card status updated successfully",
+    });
+
+  } catch (error) {
+    console.error("Change Card Status Error:", error);
+    return res.status(500).json({
+      status: false,
+      message: "Internal server error",
+    });
+  }
+};
+
+

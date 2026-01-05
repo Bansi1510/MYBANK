@@ -147,3 +147,21 @@ export const getSingleCard=async(id:string):Promise<SingleCard|null>=>{
      return null;
   }
 }
+
+export const changeCardStatus=async(id:string,action:string):Promise<boolean>=>{
+    try {
+    const res=await API.patch("card-change-status",{id,action});
+    if(res.data.status){
+      toast.success(res.data.message);
+      return true;
+    }else{
+      toast.error(res.data.message);
+      return false;
+    }
+  }  catch (error:unknown) {
+    const axiosErr=error as AxiosError<{message?:string}>;
+     const msg=axiosErr.response?.data.message||"can not fetch  Cards ";
+     toast.error(msg);
+     return  false;
+  }
+}

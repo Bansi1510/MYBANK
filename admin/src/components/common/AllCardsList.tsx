@@ -1,6 +1,6 @@
 import React, { useEffect, useState } from "react";
 import { useNavigate } from "react-router-dom";
-import { allCards, type Card } from "../services/card.api";
+import { allCards, changeCardStatus, type Card } from "../services/card.api";
 
 const AllCardsList: React.FC = () => {
   const [cards, setCards] = useState<Card[]>([]);
@@ -23,15 +23,18 @@ const AllCardsList: React.FC = () => {
     fetchData();
   }, []);
 
-  const updateStatus = (
-    cardId: string,
-    status: "inactive" | "blocked"
-  ) => {
-    setCards((prev) =>
-      prev.map((card) =>
-        card.id === cardId ? { ...card, status } : card
-      )
-    );
+  const updateStatus = async (cardId: string, status: "active" | "inactive" | "blocked") => {
+    console.log("Change Card Status API Call:", { cardId, status });
+    const res = await changeCardStatus(cardId, status);
+    if (res) {
+      setCards((prev) =>
+        prev.map((card) =>
+          card.id === cardId ? { ...card, status } : card
+        )
+      );
+
+    }
+
   };
 
   const viewCard = (cardId: string) => {
@@ -40,9 +43,7 @@ const AllCardsList: React.FC = () => {
 
   return (
     <div className="w-full p-6">
-      <h2 className="text-2xl font-semibold mb-6">
-        All Issued Cards
-      </h2>
+      <h2 className="text-2xl font-semibold mb-6">All Issued Cards</h2>
 
       <div className="overflow-x-auto bg-white border rounded">
         <table className="w-full border-collapse text-sm">
@@ -60,74 +61,60 @@ const AllCardsList: React.FC = () => {
 
           <tbody>
             {cards.map((card) => (
-              <tr
-                key={card.id}
-                className="border-t hover:bg-gray-50"
-              >
-                <td className="p-4 capitalize">
-                  {card.customer_name}
-                </td>
-
-                <td className="p-4 font-mono">
-                  {card.account_number}
-                </td>
-
-                <td className="p-4">
-                  **** **** **** {card.last4}
-                </td>
-
+              <tr key={card.id} className="border-t hover:bg-gray-50">
+                <td className="p-4 capitalize">{card.customer_name}</td>
+                <td className="p-4 font-mono">{card.account_number}</td>
+                <td className="p-4">**** **** **** {card.last4}</td>
                 <td className="p-4">
                   <span
-                    className={`px-3 py-1 rounded-full text-xs font-medium
-                      ${card.status === "active"
-                        ? "bg-green-100 text-green-700"
-                        : card.status === "inactive"
-                          ? "bg-yellow-100 text-yellow-700"
-                          : "bg-red-100 text-red-700"
-                      }
-                    `}
+                    className={`px-3 py-1 rounded-full text-xs font-medium ${card.status === "active"
+                      ? "bg-green-100 text-green-700"
+                      : card.status === "inactive"
+                        ? "bg-yellow-100 text-yellow-700"
+                        : "bg-red-100 text-red-700"
+                      }`}
                   >
                     {card.status}
                   </span>
                 </td>
-
                 <td className="p-4 text-gray-600">
                   {new Date(card.issued_at).toLocaleDateString()}
                 </td>
-
-                <td className="p-4">
-                  {card.expiry_month}/{card.expiry_year}
-                </td>
-
+                <td className="p-4">{card.expiry_month}/{card.expiry_year}</td>
                 <td className="p-4 text-center space-x-2">
                   <button
                     onClick={() => viewCard(card.id)}
-                    className="px-3 py-1.5 bg-blue-600 text-white rounded hover:bg-blue-700"
+                    className="px-3 py-1.5 w-20 bg-blue-600 text-white rounded hover:bg-blue-700"
                   >
                     See
                   </button>
 
-                  {card.status !== "inactive" && (
-                    <button
-                      onClick={() =>
-                        updateStatus(card.id, "inactive")
-                      }
-                      className="px-3 py-1.5 bg-yellow-600 text-white rounded hover:bg-yellow-700"
-                    >
-                      Inactive
-                    </button>
-                  )}
+                  <button
+                    onClick={() => updateStatus(card.id, "active")}
+                    disabled={card.status === "active"}
+                    className={`px-3 py-1.5 w-20 text-white rounded bg-green-600 hover:bg-green-700 ${card.status === "active" ? "opacity-50 cursor-not-allowed" : ""
+                      }`}
+                  >
+                    Active
+                  </button>
 
-                  {card.status !== "blocked" && (
-                    <button
-                      onClick={() =>
-                        updateStatus(card.id, "blocked")
-                      }
-                      className="px-3 py-1.5 bg-red-600 text-white rounded hover:bg-red-700"
-                    >
-                      Block
-                    </button>
-                  )}
+                  <button
+                    onClick={() => updateStatus(card.id, "inactive")}
+                    disabled={card.status === "inactive"}
+                    className={`px-3 py-1.5 w-20 text-white rounded bg-yellow-600 hover:bg-yellow-700 ${card.status === "inactive" ? "opacity-50 cursor-not-allowed" : ""
+                      }`}
+                  >
+                    Inactive
+                  </button>
+
+                  <button
+                    onClick={() => updateStatus(card.id, "blocked")}
+                    disabled={card.status === "blocked"}
+                    className={`px-3 py-1.5 w-20 text-white rounded bg-red-600 hover:bg-red-700 ${card.status === "blocked" ? "opacity-50 cursor-not-allowed" : ""
+                      }`}
+                  >
+                    Block
+                  </button>
                 </td>
               </tr>
             ))}
@@ -135,15 +122,11 @@ const AllCardsList: React.FC = () => {
         </table>
 
         {!loading && cards.length === 0 && (
-          <div className="p-6 text-center text-gray-500">
-            No cards found
-          </div>
+          <div className="p-6 text-center text-gray-500">No cards found</div>
         )}
 
         {loading && (
-          <div className="p-6 text-center text-gray-500">
-            Loading cards...
-          </div>
+          <div className="p-6 text-center text-gray-500">Loading cards...</div>
         )}
       </div>
     </div>
