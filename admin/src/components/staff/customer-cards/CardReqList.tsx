@@ -1,5 +1,5 @@
 import React, { useEffect, useState } from "react";
-import { allCardReqs, updateCardReqStatus, type CardRequest } from "../services/card.api";
+import { allCardReqs, updateCardReqStatus, type CardRequest } from "../../services/card.api";
 
 
 

@@ -1,9 +1,11 @@
 import React, { useEffect, useState } from "react";
+import { useNavigate } from "react-router-dom";
 import { allCards, type Card } from "../services/card.api";
 
 const AllCardsList: React.FC = () => {
   const [cards, setCards] = useState<Card[]>([]);
   const [loading, setLoading] = useState<boolean>(false);
+  const navigate = useNavigate();
 
   const fetchData = async () => {
     try {
@@ -11,7 +13,7 @@ const AllCardsList: React.FC = () => {
       const data = await allCards();
       setCards(data);
     } catch (error) {
-      console.error("Failed to fetch cards", error);
+      console.error("❌ Failed to fetch cards", error);
     } finally {
       setLoading(false);
     }
@@ -21,18 +23,19 @@ const AllCardsList: React.FC = () => {
     fetchData();
   }, []);
 
-  // ✅ UPDATE STATUS USING CARD ID
   const updateStatus = (
     cardId: string,
     status: "inactive" | "blocked"
   ) => {
     setCards((prev) =>
       prev.map((card) =>
-        card.id === cardId
-          ? { ...card, status }
-          : card
+        card.id === cardId ? { ...card, status } : card
       )
     );
+  };
+
+  const viewCard = (accNo: string) => {
+    navigate(`${accNo}`);
   };
 
   return (
@@ -96,7 +99,14 @@ const AllCardsList: React.FC = () => {
                   {card.expiry_month}/{card.expiry_year}
                 </td>
 
-                <td className="p-4 text-center space-x-3">
+                <td className="p-4 text-center space-x-2">
+                  <button
+                    onClick={() => viewCard(card.account_number)}
+                    className="px-3 py-1.5 bg-blue-600 text-white rounded hover:bg-blue-700"
+                  >
+                    See
+                  </button>
+
                   {card.status !== "inactive" && (
                     <button
                       onClick={() =>
@@ -124,7 +134,6 @@ const AllCardsList: React.FC = () => {
           </tbody>
         </table>
 
-        {/* EMPTY / LOADING STATES */}
         {!loading && cards.length === 0 && (
           <div className="p-6 text-center text-gray-500">
             No cards found
