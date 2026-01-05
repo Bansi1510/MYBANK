@@ -433,12 +433,12 @@ export const getCardsSummary = async (req, res) => {
 };
 
 export const getCardDetails = async (req, res) => {
-  const { account_number } = req.params;
+  const { id } = req.params;
 
-  if (!account_number) {
+  if (!id) {
     return res.status(400).json({
       status: false,
-      message: "account_number is required",
+      message: "Card id is required",
     });
   }
 
@@ -450,7 +450,7 @@ export const getCardDetails = async (req, res) => {
         u.email
       FROM cards c
       JOIN users u ON u.id = c.customer_id
-      WHERE c.account_number = ${account_number}
+      WHERE c.id = ${id}
     `;
 
     if (!card) {
@@ -473,3 +473,4 @@ export const getCardDetails = async (req, res) => {
     });
   }
 };
+

@@ -34,8 +34,8 @@ const AllCardsList: React.FC = () => {
     );
   };
 
-  const viewCard = (accNo: string) => {
-    navigate(`${accNo}`);
+  const viewCard = (cardId: string) => {
+    navigate(`${cardId}`);
   };
 
   return (
@@ -101,7 +101,7 @@ const AllCardsList: React.FC = () => {
 
                 <td className="p-4 text-center space-x-2">
                   <button
-                    onClick={() => viewCard(card.account_number)}
+                    onClick={() => viewCard(card.id)}
                     className="px-3 py-1.5 bg-blue-600 text-white rounded hover:bg-blue-700"
                   >
                     See

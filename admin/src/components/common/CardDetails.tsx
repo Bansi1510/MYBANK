@@ -1,6 +1,6 @@
 import React, { useEffect, useState } from "react";
 import { useParams } from "react-router-dom";
-import { getSingleCard, type SingleCard, } from "../services/card.api";
+import { getSingleCard, type SingleCard } from "../services/card.api";
 
 const CardDetails: React.FC = () => {
   const [card, setCard] = useState<SingleCard | null>(null);
@@ -10,51 +10,58 @@ const CardDetails: React.FC = () => {
     if (!id) return;
 
     const fetchCardDetails = async () => {
-      try {
-        const cardDetail = await getSingleCard(id);
-        setCard(cardDetail);
-      } catch (error) {
-        console.error("Failed to fetch card details", error);
-      }
+      const cardDetail = await getSingleCard(id);
+      setCard(cardDetail);
     };
 
     fetchCardDetails();
   }, [id]);
 
   if (!card) {
-    return <p className="text-center text-gray-500">Loading card details...</p>;
+    return (
+      <div className="min-h-screen flex items-center justify-center text-gray-500 text-lg">
+        Loading card details...
+      </div>
+    );
   }
 
-
   return (
-    <div className="min-h-screen bg-gray-100 p-6">
-      <div className="max-w-4xl mx-auto bg-white rounded-lg shadow-sm p-6 space-y-8">
+    <div className="min-h-screen bg-gray-100 px-6 py-10">
+      <div className="max-w-6xl mx-auto bg-white rounded-xl shadow p-10 space-y-10">
 
         {/* Header */}
-        <div className="flex justify-between items-center">
+        <div className="flex justify-between items-start border-b pb-6">
           <div>
-            <h1 className="text-xl font-semibold text-gray-800">
+            <h1 className="text-2xl font-semibold text-gray-900">
               Card Details
             </h1>
-            <p className="text-sm text-gray-500">
-              Card ID: {card.id}
+            <p className="text-base text-gray-500 mt-1">
+              Card ID: <span className="font-mono">{card.id}</span>
             </p>
           </div>
 
-          <span className="px-3 py-1 text-sm rounded-full bg-yellow-100 text-yellow-700">
+          <span
+            className={`px-4 py-1.5 text-sm font-medium rounded-full
+              ${card.status === "active"
+                ? "bg-green-100 text-green-700"
+                : card.status === "inactive"
+                  ? "bg-yellow-100 text-yellow-700"
+                  : "bg-red-100 text-red-700"
+              }`}
+          >
             {card.status}
           </span>
         </div>
 
-        {/* Customer */}
+        {/* Customer Info */}
         <Section title="Customer Information">
-          <Item label="Name" value={card.customer_name} />
-          <Item label="Email" value={card.email} />
+          <Item label="Customer Name" value={card.customer_name} />
+          <Item label="Email Address" value={card.email} />
           <Item label="Customer ID" value={card.customer_id} />
           <Item label="Account Number" value={card.account_number} mono />
         </Section>
 
-        {/* Card */}
+        {/* Card Info */}
         <Section title="Card Information">
           <Item label="Card Type" value={card.card_type} />
           <Item label="Brand" value={card.card_brand} />
@@ -65,7 +72,7 @@ const CardDetails: React.FC = () => {
             mono
           />
           <Item
-            label="Expiry"
+            label="Expiry Date"
             value={`${card.expiry_month}/${card.expiry_year}`}
           />
         </Section>
@@ -80,16 +87,17 @@ const CardDetails: React.FC = () => {
 
         {/* Timeline */}
         <Section title="Timeline">
-          <Item label="Issued At" value={card.issued_at} />
-          <Item label="Activated At" value={card.activated_at || ""} />
-          <Item label="Blocked At" value={card.blocked_at || ""} />
+          <Item label="Issued At" value={formatDate(card.issued_at)} />
+          <Item label="Activated At" value={formatDate(card.activated_at)} />
+          <Item label="Blocked At" value={formatDate(card.blocked_at)} />
         </Section>
+
       </div>
     </div>
   );
 };
 
-/* ===== Simple UI Helpers (same file) ===== */
+/* ================= Helpers ================= */
 
 const Section = ({
   title,
@@ -99,10 +107,10 @@ const Section = ({
   children: React.ReactNode;
 }) => (
   <div>
-    <h2 className="text-sm font-semibold text-gray-700 mb-3">
+    <h2 className="text-lg font-semibold text-gray-800 mb-4">
       {title}
     </h2>
-    <div className="bg-gray-50 rounded-md p-4 space-y-3">
+    <div className="grid grid-cols-1 md:grid-cols-2 gap-x-12 gap-y-4 bg-gray-50 rounded-lg p-6">
       {children}
     </div>
   </div>
@@ -118,16 +126,21 @@ const Item = ({
   mono?: boolean;
 }) => (
   <div className="flex justify-between items-center">
-    <span className="text-sm text-gray-600">
+    <span className="text-base text-gray-600">
       {label}
     </span>
     <span
-      className={`text-sm font-medium text-gray-800 ${mono ? "font-mono" : ""
+      className={`text-base font-medium text-gray-900 ${mono ? "font-mono tracking-wide" : ""
         }`}
     >
-      {value}
+      {value || "-"}
     </span>
   </div>
 );
+
+const formatDate = (date?: string | null) => {
+  if (!date) return "-";
+  return new Date(date).toLocaleString();
+};
 
 export default CardDetails;
