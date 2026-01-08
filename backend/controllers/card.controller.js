@@ -559,7 +559,7 @@ export const changeCardStatus = async (req, res) => {
 
 export const myCardAndReq = async (req, res) => {
   try {
-    const customerId = req.id; // from auth middleware
+    const customerId = req.id;
     console.log(customerId);
     const data = await sql`
       SELECT

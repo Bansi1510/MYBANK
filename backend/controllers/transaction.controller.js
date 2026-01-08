@@ -172,8 +172,130 @@ export const getTransactionSummary = async (req, res) => {
   }
 };
 
+export const transactionByStaff = async (req, res) => {
+  try {
+    const staffId = req.id;
 
+    const {
+      from_account,
+      to_account,
+      amount,
+      description,
+    } = req.body;
 
+    if (!from_account || !to_account || !amount) {
+      return res.status(400).json({
+        success: false,
+        message: "from_account, to_account and amount required",
+      });
+    }
+
+    if (from_account === to_account) {
+      return res.status(400).json({
+        success: false,
+        message: "Sender and receiver cannot be same",
+      });
+    }
+
+    await sql`
+      INSERT INTO transactions (
+        account_number,
+        transaction_type,
+        amount,
+        from_account,
+        to_account,
+        description,
+        initiated_by_staff
+      )
+      VALUES (
+        ${from_account},
+        'transfer',
+        ${amount},
+        ${from_account},
+        ${to_account},
+        ${description},
+        ${staffId}
+      )
+    `;
+
+    return res.status(201).json({
+      success: true,
+      message: "Transfer transaction recorded",
+    });
+
+  } catch (error) {
+    console.error("Neon transfer error:", error);
+    return res.status(500).json({
+      success: false,
+      message: "Transfer failed",
+    });
+  }
+};
+export const cashTransactionByStaff = async (req, res) => {
+  try {
+    const staffId = req.id;
+
+    const {
+      account_number,
+      amount,
+      transaction_type, // "deposit" | "withdraw"
+      description,
+    } = req.body;
+
+    if (!account_number || !amount || !transaction_type) {
+      return res.status(400).json({
+        success: false,
+        message: "account_number, amount and transaction_type required",
+      });
+    }
+
+    if (!["deposit", "withdraw"].includes(transaction_type)) {
+      return res.status(400).json({
+        success: false,
+        message: "transaction_type must be deposit or withdraw",
+      });
+    }
+
+    const fromAccount =
+      transaction_type === "withdraw" ? account_number : null;
+
+    const toAccount =
+      transaction_type === "deposit" ? account_number : null;
+
+    await sql`
+      INSERT INTO transactions (
+        account_number,
+        transaction_type,
+        amount,
+        from_account,
+        to_account,
+        description,
+        initiated_by_staff
+      )
+      VALUES (
+        ${account_number},
+        ${transaction_type},
+        ${amount},
+        ${fromAccount},
+        ${toAccount},
+        ${description},
+        ${staffId}
+      )
+    `;
+
+    return res.status(201).json({
+      success: true,
+      message: `Cash ${transaction_type} recorded`,
+    });
+
+  } catch (error) {
+    console.error("Neon cash error:", error);
+    return res.status(500).json({
+      success: false,
+      message: "Cash transaction failed",
+    });
+  }
+};
 export const downloadStatement = async (req, res) => {
   const userId = req.id;
   const { startDate, endDate } = req.query;
@@ -431,12 +553,3 @@ export const transferViaMobile = async (req, res) => {
     });
   }
 };
-
-
-
-
-
-
-
-
-
