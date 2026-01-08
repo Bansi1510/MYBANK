@@ -556,3 +556,61 @@ export const changeCardStatus = async (req, res) => {
 };
 
 
+
+export const myCardAndReq = async (req, res) => {
+  try {
+    const customerId = req.id; // from auth middleware
+    console.log(customerId);
+    const data = await sql`
+      SELECT
+        c.account_number,
+
+        -- Card details
+        c.card_type,
+        c.card_brand,
+        c.card_variant,
+        c.last4,
+        c.expiry_month,
+        c.expiry_year,
+        c.status        AS card_status,
+        c.daily_limit,
+        c.monthly_limit,
+        c.used_daily,
+        c.used_monthly,
+        c.issued_at,
+        c.activated_at,
+        c.blocked_at,
+
+        -- Card request details
+        cr.request_status,
+        cr.requested_at,
+        cr.requested_by,
+
+        -- User info
+        u.name
+
+      FROM  users u
+      LEFT JOIN cards c
+        ON c.customer_id = u.id
+      LEFT JOIN card_requests cr
+        ON cr.customer_id = u.id
+        AND cr.account_number = c.account_number
+
+      WHERE u.id = ${customerId}
+      ORDER BY cr.requested_at DESC
+    `;
+    console.log(data);
+    return res.status(200).json({
+      status: true,
+      count: data.length,
+      data,
+    });
+
+  } catch (error) {
+    console.error("Neon myCardAndReq error:", error);
+    return res.status(500).json({
+      status: false,
+      message: "Unable to fetch card details",
+    });
+  }
+};
