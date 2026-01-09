@@ -173,30 +173,63 @@ export const getTransactionSummary = async (req, res) => {
 };
 
 export const transactionByStaff = async (req, res) => {
+  const staffId = req.id;
+  const { from_account, to_account, amount, description } = req.body;
+
+  if (!from_account || !to_account || !amount) {
+    return res.status(400).json({
+      status: false,
+      message: "from_account, to_account and amount required",
+    });
+  }
+
+  if (from_account === to_account) {
+    return res.status(400).json({
+      status: false,
+      message: "Sender and receiver cannot be same",
+    });
+  }
+
   try {
-    const staffId = req.id;
+    // Start transaction
+    await sql`
+      BEGIN
+    `;
 
-    const {
-      from_account,
-      to_account,
-      amount,
-      description,
-    } = req.body;
+    // Lock sender row
+    const sender = await sql`
+      SELECT balance FROM accounts
+      WHERE account_number = ${from_account}
+      FOR UPDATE
+    `;
 
-    if (!from_account || !to_account || !amount) {
-      return res.status(400).json({
-        success: false,
-        message: "from_account, to_account and amount required",
-      });
-    }
+    if (!sender.length) throw new Error("Sender account not found");
+    if (sender[0].balance < amount) throw new Error("Insufficient balance");
 
-    if (from_account === to_account) {
-      return res.status(400).json({
-        success: false,
-        message: "Sender and receiver cannot be same",
-      });
-    }
+    // Lock receiver row
+    const receiver = await sql`
+      SELECT balance FROM accounts
+      WHERE account_number = ${to_account}
+      FOR UPDATE
+    `;
 
+    if (!receiver.length) throw new Error("Receiver account not found");
+
+    // Deduct from sender
+    await sql`
+      UPDATE accounts
+      SET balance = balance - ${amount}
+      WHERE account_number = ${from_account}
+    `;
+
+    // Add to receiver
+    await sql`
+      UPDATE accounts
+      SET balance = balance + ${amount}
+      WHERE account_number = ${to_account}
+    `;
+
+    // Record transaction
     await sql`
       INSERT INTO transactions (
         account_number,
@@ -218,19 +251,27 @@ export const transactionByStaff = async (req, res) => {
       )
     `;
 
+    // Commit transaction
+    await sql`
+      COMMIT
+    `;
+
     return res.status(201).json({
-      success: true,
+      status: true,
       message: "Transfer transaction recorded",
     });
-
   } catch (error) {
-    console.error("Neon transfer error:", error);
+    // Rollback on error
+    await sql`ROLLBACK`;
+
+    console.error("Neon transfer error:", error.message || error);
     return res.status(500).json({
-      success: false,
-      message: "Transfer failed",
+      status: false,
+      message: error.message || "Transfer failed",
     });
   }
 };
+
 export const cashTransactionByStaff = async (req, res) => {
   try {
     const staffId = req.id;
@@ -251,7 +292,7 @@ export const cashTransactionByStaff = async (req, res) => {
 
     if (!["deposit", "withdraw"].includes(transaction_type)) {
       return res.status(400).json({
-        success: false,
+        status: false,
         message: "transaction_type must be deposit or withdraw",
       });
     }
@@ -284,14 +325,14 @@ export const cashTransactionByStaff = async (req, res) => {
     `;
 
     return res.status(201).json({
-      success: true,
+      status: true,
       message: `Cash ${transaction_type} recorded`,
     });
 
   } catch (error) {
     console.error("Neon cash error:", error);
     return res.status(500).json({
-      success: false,
+      status: false,
       message: "Cash transaction failed",
     });
   }
