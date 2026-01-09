@@ -9,7 +9,6 @@ import StaffManagement from './components/admin/StaffManagement'
 import LoanApproval from './components/admin/LoanApproval'
 import CustomerAccounts from './components/staff/CustomerAccounts'
 import KYCVerification from './components/staff/KYCVerification'
-import DailyTransactions from './components/staff/DailyTransactions'
 import NewBankAccountRequest from './components/staff/customer-account/NewBankAccountRequest'
 import AdminNewAccountRequests from './components/admin/account-management/AdminNewAccountRequests'
 import NewAccountRequestHistory from './components/admin/account-management/NewAccountRequestHistory'
@@ -30,6 +29,8 @@ import AdminCardRequestList from './components/admin/card-management/AdminCardRe
 import AllCardsList from './components/common/AllCardsList'
 import CardReqList from './components/staff/customer-cards/CardReqList'
 import CardDetails from './components/common/CardDetails'
+import StaffTransactions from './components/staff/StaffTransactions'
+import AccountTransfer from './components/staff/staff-transactions/AccountTransfer'
 
 
 
@@ -122,8 +123,15 @@ const appRouter = createBrowserRouter([
           { path: "all-cards/:id", element: <CardDetails /> }
         ]
       },
+      {
+        path: "transactions",
+        element: <StaffTransactions />,
+        children: [
+          { path: "account-transfer", element: <AccountTransfer /> }
+        ]
+      },
       { path: "kyc", element: <KYCVerification /> },
-      { path: "transactions", element: <DailyTransactions /> },
+
     ],
   }
 
