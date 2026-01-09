@@ -1,70 +1,15 @@
 import React, { useState } from "react";
-
-interface Transaction {
-  id: number;
-  account_number: string;
-  transaction_type: string;
-  amount: number;
-  from_account: string | null;
-  to_account: string | null;
-  description: string | null;
-  status: string;
-  created_at: string;
-  initiated_by_user: number | null;
-  initiated_by_staff: number | null;
-}
-
-const mockTransactions: Transaction[] = [
-  {
-    id: 1,
-    account_number: "1234567890",
-    transaction_type: "deposit",
-    amount: 5000,
-    from_account: null,
-    to_account: "1234567890",
-    description: "Salary deposit",
-    status: "success",
-    created_at: "2026-01-09T10:00:00Z",
-    initiated_by_user: null,
-    initiated_by_staff: 2,
-  },
-  {
-    id: 2,
-    account_number: "1234567890",
-    transaction_type: "withdraw",
-    amount: 1000,
-    from_account: "1234567890",
-    to_account: null,
-    description: "ATM withdrawal",
-    status: "success",
-    created_at: "2026-01-08T14:30:00Z",
-    initiated_by_user: null,
-    initiated_by_staff: 2,
-  },
-  {
-    id: 3,
-    account_number: "1234567890",
-    transaction_type: "transfer",
-    amount: 2000,
-    from_account: "1234567890",
-    to_account: "9876543210",
-    description: "Rent payment",
-    status: "success",
-    created_at: "2026-01-07T09:15:00Z",
-    initiated_by_user: null,
-    initiated_by_staff: 2,
-  },
-];
-
+import { getTransactionDetailsByAccNo, type Transaction } from "../services/transaction.api";
 const StaffTransactionViewer: React.FC = () => {
   const [accountNumber, setAccountNumber] = useState("");
   const [startDate, setStartDate] = useState("");
   const [endDate, setEndDate] = useState("");
   const [transactions, setTransactions] = useState<Transaction[]>([]);
 
-  const handleGetDetails = () => {
+  const handleGetDetails = async () => {
     console.log("Input Data:", { accountNumber, startDate, endDate });
-    setTransactions(mockTransactions);
+    const data = await getTransactionDetailsByAccNo(accountNumber, startDate, endDate);
+    setTransactions(data);
   };
 
   return (

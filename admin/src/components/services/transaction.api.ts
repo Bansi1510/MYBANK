@@ -57,3 +57,32 @@ export const cashTransactionByStaff=async(payload:CashWithdraw):Promise<boolean>
        return false;
   }
 }
+export interface Transaction {
+  id: number;
+  account_number: string;
+  transaction_type: string;
+  amount: number;
+  from_account: string | null;
+  to_account: string | null;
+  description: string | null;
+  status: string;
+  created_at: string;
+  initiated_by_user: number | null;
+  initiated_by_staff: number | null;
+}
+export const getTransactionDetailsByAccNo=async(account_number:string,start_date?:string,end_date?:string):Promise<Transaction[]|[]>=>{
+  try {
+    const res=await API.get("acc-transactions",{params: {account_number,start_date,end_date,}});
+    if(res.data.status){
+      return res.data.transactions;
+    }else{
+      toast.error(res.data.message);
+      return []
+    }
+  }catch (error:unknown) {
+      const axiosErr=error as AxiosError<{message?:string}>;
+       const msg=axiosErr.response?.data.message||"we can not fetch account transactions ";
+       toast.error(msg);
+       return [];
+  }
+}

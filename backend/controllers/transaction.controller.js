@@ -220,8 +220,6 @@ export const getTransactionsForStaff = async (req, res) => {
 
     res.json({
       status: true,
-      role: "staff/admin",
-      count: transactions.length,
       transactions,
     });
   } catch (error) {
