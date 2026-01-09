@@ -32,6 +32,7 @@ import CardDetails from './components/common/CardDetails'
 import StaffTransactions from './components/staff/StaffTransactions'
 import AccountTransfer from './components/staff/staff-transactions/AccountTransfer'
 import CashTransactionForm from './components/staff/staff-transactions/CashTransactionForm'
+import StaffTransactionViewer from './components/common/StaffTransactionViewer'
 
 
 
@@ -129,7 +130,8 @@ const appRouter = createBrowserRouter([
         element: <StaffTransactions />,
         children: [
           { path: "account-transfer", element: <AccountTransfer /> },
-          { path: "cash-transaction", element: <CashTransactionForm /> }
+          { path: "cash-transaction", element: <CashTransactionForm /> },
+          { path: "transaction", element: <StaffTransactionViewer /> }
         ]
       },
       { path: "kyc", element: <KYCVerification /> },

@@ -112,65 +112,127 @@ export const transferViaAcc = async (req, res) => {
 
 
 export const getTransactionHistory = async (req, res) => {
-  const userId = req.id;
   try {
+    const userId = req.id;
+    const { start_date, end_date } = req.query;
+
+
     const acc = await sql`
-      SELECT account_number FROM accounts
-      WHERE user_id = ${userId}
-    `;
-    if (!acc.length) {
-      return res.status(404).json({ status: false, message: "Account not found" });
-    }
-
-    const transactions = await sql`
-      SELECT * FROM transactions
-      WHERE account_number = ${acc[0].account_number}
-      ORDER BY created_at DESC
-    `;
-
-    res.json({ status: true, transactions });
-  } catch (err) {
-    res.status(500).json({ status: false, error: err.message });
-  }
-};
-
-export const getTransactionSummary = async (req, res) => {
-  const userId = req.user.id;
-  try {
-    const acc = await sql`
-      SELECT account_number FROM accounts
+      SELECT account_number
+      FROM accounts
       WHERE user_id = ${userId}
     `;
 
     if (!acc.length) {
-      return res.status(404).json({ status: false, message: "Account not found" });
+      return res.status(404).json({
+        status: false,
+        message: "Account not found",
+      });
     }
 
     const accountNumber = acc[0].account_number;
+    let transactions;
 
-    const income = await sql`
-      SELECT COALESCE(SUM(amount),0) AS income
-      FROM transactions
-      WHERE to_account = ${accountNumber}
-    `;
 
-    const expense = await sql`
-      SELECT COALESCE(SUM(amount),0) AS expense
-      FROM transactions
-      WHERE from_account = ${accountNumber}
-    `;
+    if (start_date && end_date) {
+      transactions = await sql`
+        SELECT *
+        FROM transactions
+        WHERE account_number = ${accountNumber}
+        AND created_at BETWEEN ${start_date} AND ${end_date}
+        ORDER BY created_at DESC
+      `;
+    }
+
+    else if (start_date) {
+      transactions = await sql`
+        SELECT *
+        FROM transactions
+        WHERE account_number = ${accountNumber}
+        AND created_at >= ${start_date}
+        ORDER BY created_at DESC
+      `;
+    }
+
+    else {
+      transactions = await sql`
+        SELECT *
+        FROM transactions
+        WHERE account_number = ${accountNumber}
+        ORDER BY created_at DESC
+      `;
+    }
+
+    return res.json({
+      status: true,
+      count: transactions.length,
+      transactions,
+    });
+
+  } catch (error) {
+    console.error("Transaction history error:", error);
+    return res.status(500).json({
+      status: false,
+      message: "Failed to fetch transactions",
+    });
+  }
+};
+
+export const getTransactionsForStaff = async (req, res) => {
+  try {
+    const { account_number, start_date, end_date } = req.query;
+
+    if (!account_number) {
+      return res
+        .status(400)
+        .json({ status: false, message: "account_number is required" });
+    }
+
+    let transactions;
+
+    if (start_date && end_date) {
+      transactions = await sql`
+        SELECT *
+        FROM transactions
+        WHERE (from_account = ${account_number}
+           OR to_account = ${account_number})
+        AND created_at BETWEEN ${start_date} AND ${end_date}
+        ORDER BY created_at DESC
+      `;
+    } else if (start_date) {
+      transactions = await sql`
+        SELECT *
+        FROM transactions
+        WHERE (from_account = ${account_number}
+           OR to_account = ${account_number})
+        AND created_at >= ${start_date}
+        ORDER BY created_at DESC
+      `;
+    } else {
+      transactions = await sql`
+        SELECT *
+        FROM transactions
+        WHERE (from_account = ${account_number}
+           OR to_account = ${account_number})
+        ORDER BY created_at DESC
+      `;
+    }
 
     res.json({
       status: true,
-      summary: {
-        income: income[0].income,
-        expense: expense[0].expense,
-      },
+      role: "staff/admin",
+      count: transactions.length,
+      transactions,
     });
-  } catch (err) {
-    res.status(500).json({ status: false, error: err.message });
+  } catch (error) {
+    res.status(500).json({
+      status: false,
+      message: "Failed to fetch transactions",
+      error: error.message,
+    });
   }
 };
+
 
 export const transactionByStaff = async (req, res) => {
   const staffId = req.id;
@@ -377,6 +439,64 @@ export const cashTransactionByStaff = async (req, res) => {
   }
 };
 
+export const getTransactionsByAccount = async (req, res) => {
+  try {
+    const { account_number, start_date, end_date } = req.query;
+
+    if (!account_number) {
+      return res.status(400).json({
+        status: false,
+        message: "account_number is required",
+      });
+    }
+
+    let query;
+
+    if (start_date && end_date) {
+      query = sql`
+        SELECT *
+        FROM transactions
+        WHERE account_number = ${account_number}
+          AND created_at BETWEEN ${start_date} AND ${end_date}
+        ORDER BY created_at DESC
+      `;
+    }
+
+    else if (start_date && !end_date) {
+      query = sql`
+        SELECT *
+        FROM transactions
+        WHERE account_number = ${account_number}
+          AND created_at >= ${start_date}
+        ORDER BY created_at DESC
+      `;
+    }
+
+    else {
+      query = sql`
+        SELECT *
+        FROM transactions
+        WHERE account_number = ${account_number}
+        ORDER BY created_at DESC
+      `;
+    }
+
+    const transactions = await query;
+
+    return res.status(200).json({
+      status: true,
+      count: transactions.length,
+      data: transactions,
+    });
+
+  } catch (error) {
+    console.error("Get transactions error:", error);
+    return res.status(500).json({
+      status: false,
+      message: "Failed to fetch transactions",
+    });
+  }
+};
 
 export const downloadStatement = async (req, res) => {
   const userId = req.id;

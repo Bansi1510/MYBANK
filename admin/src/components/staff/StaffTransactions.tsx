@@ -20,7 +20,7 @@ const StaffTransactions: React.FC = () => {
     {
       label: "Transaction History",
       desc: "View all transactions",
-      link: "transaction-history",
+      link: "transaction",
     },
     {
       label: "Revert Transaction",
