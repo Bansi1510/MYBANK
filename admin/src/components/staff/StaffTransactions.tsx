@@ -13,14 +13,9 @@ const StaffTransactions: React.FC = () => {
       link: "account-transfer",
     },
     {
-      label: "Cash Deposit",
-      desc: "Deposit cash into account",
-      link: "cash-deposit",
-    },
-    {
-      label: "Cash Withdrawal",
-      desc: "Withdraw cash from account",
-      link: "cash-withdraw",
+      label: "Cash Transaction",
+      desc: "Deposit or withdraw cash",
+      link: "cash-transaction",
     },
     {
       label: "Transaction History",
@@ -51,7 +46,6 @@ const StaffTransactions: React.FC = () => {
 
   return (
     <div className="min-h-screen">
-      {/* Show grid only if no child route is active */}
       {!isChildActive && (
         <div className="p-6">
           <h2 className="text-2xl font-bold mb-6">Staff Transactions</h2>
@@ -63,7 +57,7 @@ const StaffTransactions: React.FC = () => {
                 to={item.link}
                 className="block bg-blue-500 text-white rounded-xl shadow
                            hover:bg-blue-600 transition text-center
-                           font-medium py-8 px-4 w-full"
+                           font-medium py-8 px-4"
               >
                 <div className="text-lg font-semibold">{item.label}</div>
                 <div className="text-sm opacity-80 mt-1">{item.desc}</div>
@@ -74,7 +68,7 @@ const StaffTransactions: React.FC = () => {
       )}
 
       {isChildActive && (
-        <div className="min-h-screen flex items-center justify-center bg-gray-50">
+        <div className="min-h-screen bg-gray-50 p-6">
           {outlet}
         </div>
       )}

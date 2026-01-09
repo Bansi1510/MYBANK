@@ -273,70 +273,111 @@ export const transactionByStaff = async (req, res) => {
 };
 
 export const cashTransactionByStaff = async (req, res) => {
+  const staffId = req.id;
+
+  const {
+    account_number,
+    amount,
+    transaction_type,
+    description,
+  } = req.body;
+
+  if (!account_number || !amount || !transaction_type) {
+    return res.status(400).json({
+      status: false,
+      message: "account_number, amount and transaction_type required",
+    });
+  }
+
+  if (!["deposit", "withdraw"].includes(transaction_type)) {
+    return res.status(400).json({
+      status: false,
+      message: "transaction_type must be deposit or withdraw",
+    });
+  }
+
   try {
-    const staffId = req.id;
+    /* START NEON TRANSACTION */
+    await sql`BEGIN`;
 
-    const {
-      account_number,
-      amount,
-      transaction_type, // "deposit" | "withdraw"
-      description,
-    } = req.body;
+    /* LOCK ACCOUNT */
+    const account = await sql`
+      SELECT balance
+      FROM accounts
+      WHERE account_number = ${account_number}
+      FOR UPDATE
+    `;
 
-    if (!account_number || !amount || !transaction_type) {
-      return res.status(400).json({
-        success: false,
-        message: "account_number, amount and transaction_type required",
-      });
+    if (!account.length) {
+      throw new Error("Account not found");
     }
 
-    if (!["deposit", "withdraw"].includes(transaction_type)) {
-      return res.status(400).json({
-        status: false,
-        message: "transaction_type must be deposit or withdraw",
-      });
+    const currentBalance = Number(account[0].balance);
+    const txnAmount = Number(amount);
+
+    if (transaction_type === "withdraw" && currentBalance < txnAmount) {
+      throw new Error("Insufficient balance");
     }
 
-    const fromAccount =
-      transaction_type === "withdraw" ? account_number : null;
+    /* CALCULATE NEW BALANCE */
+    const newBalance =
+      transaction_type === "deposit"
+        ? currentBalance + txnAmount
+        : currentBalance - txnAmount;
 
-    const toAccount =
-      transaction_type === "deposit" ? account_number : null;
+    /* UPDATE ACCOUNT BALANCE */
+    await sql`
+      UPDATE accounts
+      SET balance = ${newBalance}
+      WHERE account_number = ${account_number}
+    `;
 
+    /* INSERT TRANSACTION RECORD */
     await sql`
       INSERT INTO transactions (
         account_number,
         transaction_type,
         amount,
+        currency,
         from_account,
         to_account,
         description,
+        status,
         initiated_by_staff
       )
       VALUES (
         ${account_number},
         ${transaction_type},
-        ${amount},
-        ${fromAccount},
-        ${toAccount},
+        ${txnAmount},
+        'INR',
+        ${transaction_type === "withdraw" ? account_number : null},
+        ${transaction_type === "deposit" ? account_number : null},
         ${description},
+        'success',
         ${staffId}
       )
     `;
 
+    /* COMMIT */
+    await sql`COMMIT`;
+
     return res.status(201).json({
       status: true,
-      message: `Cash ${transaction_type} recorded`,
+      message: `Cash ${transaction_type} successful`,
     });
 
   } catch (error) {
-    console.error("Neon cash error:", error);
+    await sql`ROLLBACK`;
+
+    console.error("Neon cash error:", error.message || error);
     return res.status(500).json({
       status: false,
-      message: "Cash transaction failed",
+      message: error.message || "Cash transaction failed",
     });
   }
 };
+
+
 export const downloadStatement = async (req, res) => {
   const userId = req.id;
   const { startDate, endDate } = req.query;

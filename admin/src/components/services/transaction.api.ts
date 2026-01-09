@@ -28,7 +28,31 @@ export const staffAcctoAccTransferAPI=async(payload:AcctoAcc):Promise<boolean>=>
     }
   }catch (error:unknown) {
       const axiosErr=error as AxiosError<{message?:string}>;
-       const msg=axiosErr.response?.data.message||"can not fetch  Cards ";
+       const msg=axiosErr.response?.data.message||" tarnsaction failed ";
+       toast.error(msg);
+       return false;
+  }
+}
+export interface CashWithdraw{
+  account_number:string,
+  amount:number,
+  transaction_type:string,
+  description:string
+}
+
+export const cashTransactionByStaff=async(payload:CashWithdraw):Promise<boolean>=>{
+  try {
+      const res=await API.post('/staff/cash-transaction',payload);
+      if(res.data.status){
+        toast.success(res.data.message);
+        return true;
+      }else{
+        toast.error(res.data.message);
+        return false;
+      }
+  }catch (error:unknown) {
+      const axiosErr=error as AxiosError<{message?:string}>;
+       const msg=axiosErr.response?.data.message||"tarnsaction failed  ";
        toast.error(msg);
        return false;
   }
