@@ -7,10 +7,6 @@ const staffOptions = [
   { name: "customer cards ", path: "cutomer-card" },
   { name: "KYC Verification", path: "kyc" },
   { name: "Cash Deposit / Withdraw", path: "transactions" },
-  { name: "Passbook Printing", path: "passbook" },
-  { name: "Fund Transfer", path: "fund-transfer" },
-  { name: "Customer Requests", path: "requests" },
-  { name: "Settings", path: "settings" }
 ];
 
 const StaffSidebar: React.FC = () => {

@@ -29,25 +29,11 @@ const CustomerLoan: React.FC = () => {
       link: "active-loans",
     },
     {
-      label: "Loan Repayments",
-      desc: "Check EMI & repayment history",
-      link: "loan-repayments",
-    },
-    {
       label: "Loan  EMI Payment",
       desc: "monthly loan EMI payment",
       link: "loan-emi-payment",
     },
-    {
-      label: "Overdue Loans",
-      desc: "View overdue or defaulted loans",
-      link: "overdue-loans",
-    },
-    {
-      label: "Loan Documents",
-      desc: "Verify loan-related documents",
-      link: "loan-documents",
-    },
+
   ];
 
   return (

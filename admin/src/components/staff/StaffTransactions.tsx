@@ -23,24 +23,9 @@ const StaffTransactions: React.FC = () => {
       link: "transaction",
     },
     {
-      label: "Revert Transaction",
-      desc: "Reverse a failed transaction",
-      link: "revert-transaction",
-    },
-    {
-      label: "Pending Transactions",
-      desc: "Approve pending transactions",
-      link: "pending-transactions",
-    },
-    {
       label: "Daily Transaction Report",
       desc: "View daily transaction summary",
       link: "daily-report",
-    },
-    {
-      label: "Transaction Limits",
-      desc: "Manage transaction limits",
-      link: "transaction-limits",
     },
   ];
 

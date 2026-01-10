@@ -14,7 +14,6 @@ const CustomerAccounts: React.FC = () => {
     { label: "KYC Verification", desc: "Verify customer identity", link: "kyc" },
     { label: "Close Account", desc: "Permanently close an account", link: "close-account" },
     { label: "Transaction History", desc: "View customer transactions", link: "transactions" },
-    { label: "Pending Approvals", desc: "Check all requests awaiting action", link: "approvals" },
   ];
 
   return (
