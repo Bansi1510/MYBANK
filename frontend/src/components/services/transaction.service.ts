@@ -104,3 +104,66 @@ export const AccountUpiAPI = async (
     return false;
   }
 };
+
+export interface Transaction {
+  id: number;
+  account_number: string;
+  transaction_type: string;
+  amount: number;
+  from_account: string | null;
+  to_account: string | null;
+  description: string | null;
+  status: string;
+  currency:string;
+  created_at: string;
+  initiated_by_user: number | null;
+  initiated_by_staff: number | null;
+}
+export const getMyTransactionHistory=async(start_date?:string,end_date?:string):Promise<Transaction[]|[]>=>{
+  try {
+    const res=await API.get("history",{params:{
+      start_date,
+      end_date
+    }})
+
+    if(res.data.status){
+      return res.data.transactions;
+    }else{
+      toast.error(res.data.message);
+      return [];
+    }
+  }catch (error) {
+    const axiosErr = error as AxiosError<{ message?: string }>;
+    const msg = axiosErr.response?.data?.message || "Transfer error";
+    toast.error(msg);
+    return [];
+  }
+} 
+
+
+export const downloadStatementAPI = async (start_date?: string,end_date?: string) => {
+  try {
+    const res = await API.get("/download-statement", {
+      params: { start_date, end_date },
+      responseType: "blob",  
+    });
+
+    const pdfBlob = new Blob([res.data], {
+      type: "application/pdf",
+    });
+
+    const url = window.URL.createObjectURL(pdfBlob);
+
+     window.open(url, "_blank");
+
+     setTimeout(() => {
+      window.URL.revokeObjectURL(url);
+    }, 1000);
+
+  } catch (error) {
+    const axiosErr = error as AxiosError<{ message?: string }>;
+    const msg =
+      axiosErr.response?.data?.message || "Statement download failed";
+    toast.error(msg);
+  }
+};

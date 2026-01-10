@@ -498,8 +498,7 @@ export const getTransactionsByAccount = async (req, res) => {
 
 export const downloadStatement = async (req, res) => {
   const userId = req.id;
-  const { startDate, endDate } = req.query;
-  console.log("hello", userId);
+  const { start_date, end_date } = req.query;
 
   try {
     const userRes = await sql`
@@ -523,10 +522,10 @@ export const downloadStatement = async (req, res) => {
     const account = accRes[0];
     const accountNumber = account.account_number;
 
-    const finalEndDate = endDate || new Date().toISOString().slice(0, 10);
+    const finalend_date = end_date || new Date().toISOString().slice(0, 10);
 
     let tx;
-    if (startDate) {
+    if (start_date) {
       tx = await sql`
         SELECT t.*, 
           ua.name AS user_name_from, 
@@ -535,7 +534,7 @@ export const downloadStatement = async (req, res) => {
           LEFT JOIN users ua ON ua.id = (SELECT user_id FROM accounts WHERE account_number = t.from_account)
           LEFT JOIN users ub ON ub.id = (SELECT user_id FROM accounts WHERE account_number = t.to_account)
         WHERE t.account_number = ${accountNumber}
-          AND t.created_at BETWEEN ${startDate} AND ${finalEndDate}
+          AND t.created_at BETWEEN ${start_date} AND ${finalend_date}
         ORDER BY t.created_at DESC
       `;
     } else {
@@ -568,7 +567,7 @@ export const downloadStatement = async (req, res) => {
     doc.text(`Account Type: ${account.account_type}`);
     doc.text(`Current Balance: ${account.balance}`);
     doc.moveDown();
-    doc.text(`Statement Period: ${startDate ? startDate : "FULL"} → ${finalEndDate}`);
+    doc.text(`Statement Period: ${start_date ? start_date : "FULL"} → ${finalend_date}`);
     doc.moveDown();
 
     doc.fontSize(12).text("Transactions:", { underline: true });

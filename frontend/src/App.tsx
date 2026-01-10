@@ -23,6 +23,7 @@ import LoanApplicationPage from "./components/Loans/LoanApplicationPage";
 import LoanPaymentForm from "./components/services_page/loan/LoanPaymentForm";
 import Cards from "./components/pages/Cards";
 import CardRequestForm from "./components/cards/CardRequestForm";
+import MyTransactionHistory from "./components/auth/MyTransactionHistory";
 
 const appRouter = createBrowserRouter([
   {
@@ -36,6 +37,10 @@ const appRouter = createBrowserRouter([
   {
     path: "/profile",
     element: <Profile />
+  },
+  {
+    path: "/my-transaction-history",
+    element: <MyTransactionHistory />
   },
   {
     path: "/accounts",

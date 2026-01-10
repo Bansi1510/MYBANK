@@ -1,14 +1,19 @@
 import React from "react";
 import { useSelector } from "react-redux";
-import { User2, Mail, Phone, MapPin } from "lucide-react";
+import { useNavigate } from "react-router-dom";
+import {
+  User2,
+  Mail,
+  Phone,
+  MapPin,
+  History,
+} from "lucide-react";
 
 import type { RootState } from "../redux/store";
 
-
 const Profile: React.FC = () => {
   const user = useSelector((state: RootState) => state.auth.profile);
-
-
+  const navigate = useNavigate();
 
   if (!user)
     return (
@@ -20,22 +25,26 @@ const Profile: React.FC = () => {
   return (
     <div className="max-w-5xl mx-auto px-6 py-10">
 
-      {/* Header */}
+      {/* ================= Header ================= */}
       <div className="bg-white shadow rounded-xl p-8 border border-gray-200 flex items-center gap-6">
         <div className="w-20 h-20 rounded-full bg-blue-600 flex items-center justify-center">
           <User2 size={40} className="text-white" />
         </div>
 
         <div>
-          <h1 className="text-2xl font-semibold text-gray-900">{user.name}</h1>
-          <p className="text-gray-500 mt-1">User ID: {user.id}</p>
+          <h1 className="text-2xl font-semibold text-gray-900">
+            {user.name}
+          </h1>
+          <p className="text-gray-500 mt-1">
+            User ID: {user.id}
+          </p>
         </div>
       </div>
 
-      {/* User Details */}
+      {/* ================= User Details ================= */}
       <div className="grid grid-cols-1 md:grid-cols-2 gap-8 mt-10">
 
-        {/* Basic Info */}
+        {/* Contact Info */}
         <div className="bg-white shadow rounded-xl p-6 border border-gray-200">
           <h2 className="text-lg font-semibold text-gray-900 mb-4">
             Contact Information
@@ -49,32 +58,46 @@ const Profile: React.FC = () => {
 
             <div className="flex items-center gap-3">
               <Phone className="text-green-600" size={20} />
-              <span className="text-gray-700">{user.mobile_number}</span>
+              <span className="text-gray-700">
+                {user.mobile_number}
+              </span>
             </div>
 
             <div className="flex items-center gap-3">
               <MapPin className="text-red-600" size={20} />
-              <span className="text-gray-700">{user.address}</span>
+              <span className="text-gray-700">
+                {user.address}
+              </span>
             </div>
           </div>
         </div>
 
-        {/* Other Details */}
+        {/* Additional Info + Transaction History */}
         <div className="bg-white shadow rounded-xl p-6 border border-gray-200">
           <h2 className="text-lg font-semibold text-gray-900 mb-4">
             Additional Information
           </h2>
 
-          <p className="text-gray-700">
+          <p className="text-gray-700 mb-6">
             <span className="font-medium">Created At:</span>{" "}
             {user.created_at
               ? new Date(user.created_at).toLocaleString()
               : "Not available"}
           </p>
+
+          <button
+            onClick={() => navigate("/my-transaction-history")}
+            className="w-full flex items-center justify-center gap-2
+                       bg-blue-600 text-white py-2.5 rounded-lg
+                       hover:bg-blue-700 transition font-medium"
+          >
+            <History size={18} />
+            View Transaction History
+          </button>
         </div>
       </div>
 
-      {/* Accounts */}
+      {/* ================= Accounts ================= */}
       <div className="bg-white shadow rounded-xl p-6 border border-gray-200 mt-10">
         <h2 className="text-lg font-semibold text-gray-900 mb-4">
           Linked Bank Accounts
@@ -83,26 +106,41 @@ const Profile: React.FC = () => {
         <table className="w-full text-left border-collapse">
           <thead>
             <tr className="bg-gray-50 border-b">
-              <th className="py-3 px-2 text-gray-700 font-medium">Account No.</th>
-              <th className="py-3 px-2 text-gray-700 font-medium">Type</th>
-              <th className="py-3 px-2 text-gray-700 font-medium">Balance</th>
-              <th className="py-3 px-2 text-gray-700 font-medium">Status</th>
+              <th className="py-3 px-2 text-gray-700 font-medium">
+                Account No.
+              </th>
+              <th className="py-3 px-2 text-gray-700 font-medium">
+                Type
+              </th>
+              <th className="py-3 px-2 text-gray-700 font-medium">
+                Balance
+              </th>
+              <th className="py-3 px-2 text-gray-700 font-medium">
+                Status
+              </th>
             </tr>
           </thead>
 
           <tbody>
             {user.accounts?.map((acc) => (
-              <tr key={acc.id} className="border-b hover:bg-gray-50">
-                <td className="py-3 px-2">{acc.account_number}</td>
-                <td className="py-3 px-2 capitalize">{acc.account_type}</td>
+              <tr
+                key={acc.id}
+                className="border-b hover:bg-gray-50"
+              >
+                <td className="py-3 px-2">
+                  {acc.account_number}
+                </td>
+                <td className="py-3 px-2 capitalize">
+                  {acc.account_type}
+                </td>
                 <td className="py-3 px-2 font-medium text-gray-900">
                   ₹ {acc.balance}
                 </td>
                 <td className="py-3 px-2">
                   <span
                     className={`px-3 py-1 rounded-full text-sm ${acc.status === "active"
-                      ? "bg-green-100 text-green-700"
-                      : "bg-gray-200 text-gray-600"
+                        ? "bg-green-100 text-green-700"
+                        : "bg-gray-200 text-gray-600"
                       }`}
                   >
                     {acc.status}
