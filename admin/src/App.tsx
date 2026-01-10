@@ -33,6 +33,7 @@ import StaffTransactions from './components/staff/StaffTransactions'
 import AccountTransfer from './components/staff/staff-transactions/AccountTransfer'
 import CashTransactionForm from './components/staff/staff-transactions/CashTransactionForm'
 import StaffTransactionViewer from './components/common/StaffTransactionViewer'
+import UpdateUserDetails from './components/staff/customer-account/UpdateUserDetails'
 
 
 
@@ -102,7 +103,8 @@ const appRouter = createBrowserRouter([
         element: <CustomerAccounts />,
         children: [
           { path: "new-account", element: <NewBankAccountRequest /> },
-          { path: "all-accounts", element: <AccountsTable /> }
+          { path: "all-accounts", element: <AccountsTable /> },
+          { path: "update-customer", element: <UpdateUserDetails /> }
         ],
       },
       {
