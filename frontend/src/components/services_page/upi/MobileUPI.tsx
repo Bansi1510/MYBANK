@@ -17,11 +17,11 @@ const MobileUPI: React.FC = () => {
   const dispatch = useDispatch();
   const navigate = useNavigate();
 
-  // ✅ Fetch account directly from Redux
-  const account = useSelector(
-    (state: RootState) => state.auth.profile?.accounts?.[0]
-  );
 
+  const account = useSelector(
+    (state: RootState) => state.auth.profile?.accounts[0]
+  );
+  console.log(account?.account_number);
   const mobileUPIHandler = async () => {
     if (!account) {
       alert("Account not found.");

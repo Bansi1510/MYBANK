@@ -61,7 +61,7 @@ const Login: React.FC = () => {
 
     // 🔥 FETCH FULL USER + ACCOUNT DATA ONCE
     const profile = await getProfileAPI();
-
+    console.log(profile);
     if (profile) {
       dispatch(setAuth(profile));
       navigate("/");

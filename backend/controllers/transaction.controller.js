@@ -636,7 +636,7 @@ export const downloadStatement = async (req, res) => {
 export const transferViaMobile = async (req, res) => {
   try {
     const { senderAccountNumber, recipientMobile, amount, note } = req.body;
-
+    console.log(req.body);
     if (!senderAccountNumber || !recipientMobile || !amount) {
       return res.status(400).json({ status: false, message: "Missing fields" });
     }
