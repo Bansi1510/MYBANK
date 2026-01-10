@@ -10,10 +10,6 @@ const CardManagement: React.FC = () => {
     { label: "Issued Cards", desc: "View all active customer cards", link: "all-cards" },
     { label: "Approve / Reject", desc: "Handle pending approvals", link: "approvals" },
     { label: "Block / Unblock", desc: "Control card security status", link: "block-unblock" },
-    { label: "Limit Management", desc: "Update card usage limits", link: "card-limits" },
-    { label: "Card Replacement", desc: "Manage replacement requests", link: "replacements" },
-    { label: "Virtual Cards", desc: "Administer virtual cards", link: "virtual-cards" },
-    { label: "Card Logs", desc: "Audit card-related activities", link: "card-logs" },
   ];
 
   return (

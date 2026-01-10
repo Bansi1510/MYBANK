@@ -22,11 +22,6 @@ const StaffManagement: React.FC = () => {
       link: "edit",
     },
     {
-      title: "Assign Roles",
-      desc: "Manage roles and permissions",
-      link: "roles",
-    },
-    {
       title: "Attendance",
       desc: "Monitor staff attendance",
       link: "attendance",
@@ -35,16 +30,6 @@ const StaffManagement: React.FC = () => {
       title: "Leave Requests",
       desc: "Approve or reject leave requests",
       link: "leave-requests",
-    },
-    {
-      title: "Performance Reports",
-      desc: "View staff performance",
-      link: "performance",
-    },
-    {
-      title: "Settings",
-      desc: "Staff management settings",
-      link: "settings",
     },
   ];
 

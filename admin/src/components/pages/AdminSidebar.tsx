@@ -7,9 +7,6 @@ const sidebarOptions = [
   { name: "Card Mangement", path: "card-management" },
   { name: "All Transactions", path: "transactions" },
   { name: "Loan Approval", path: "loan" },
-  { name: "Reports", path: "reports" },
-  { name: "Requests", path: "requests" },
-  { name: "Settings", path: "settings" },
 ];
 
 const AdminSidebar: React.FC = () => {
