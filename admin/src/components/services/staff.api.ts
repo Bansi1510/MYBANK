@@ -70,3 +70,21 @@ export const getUserDetails = async (account_number: string, aadhar_number: stri
     return  null;
   }
 }
+
+export const updateUserDetails=async(data:UserDetails):Promise<boolean>=>{
+  try {
+    const res=await API.put("update-user-details",data);
+    if(res.data.status){
+      toast.success(res.data.message);
+      return true;
+    }else{
+      toast.error(res.data.message);
+      return false;
+    }
+  }  catch (error: unknown) {
+    const axiosErr = error as AxiosError<{ message?: string }>;
+    const msg = axiosErr.response?.data?.message || "User detils Error";
+    toast.error(msg);
+    return false;
+  }
+}

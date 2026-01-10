@@ -1,7 +1,9 @@
 import React, { useState } from "react";
-import { getUserDetails, type UserDetails } from "../../services/staff.api";
+import { getUserDetails, updateUserDetails, type UserDetails } from "../../services/staff.api";
+import { useNavigate } from "react-router-dom";
 
 const UpdateUserDetails: React.FC = () => {
+  const navigate = useNavigate();
   const [accountNumber, setAccountNumber] = useState("");
   const [aadharNumber, setAadharNumber] = useState("");
   const [user, setUser] = useState<UserDetails | null>(null);
@@ -17,10 +19,17 @@ const UpdateUserDetails: React.FC = () => {
     setEditMode(false);
   };
 
-  const handleSubmitUpdate = () => {
+  const handleSubmitUpdate = async () => {
+    if (!user) {
+      alert("User data not available");
+      return;
+    }
     console.log("UPDATED USER DATA:", user);
-    alert("Updated data logged in console");
-    setEditMode(false);
+    const res = await updateUserDetails(user);
+    if (res) {
+      setEditMode(false);
+      navigate(-1);
+    }
   };
 
   return (
@@ -156,10 +165,10 @@ const UpdateUserDetails: React.FC = () => {
                   setUser({ ...user, account_type: e.target.value })
                 }
               >
-                <option value="Saving">Saving</option>
-                <option value="Current">Current</option>
-                <option value="Salary">Salary</option>
-                <option value="Fixed">Fixed</option>
+                <option value="saving">Saving</option>
+                <option value="current">Current</option>
+                <option value="salary">Salary</option>
+                <option value="fixed">Fixed</option>
               </select>
             </div>
 

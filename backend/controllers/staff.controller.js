@@ -109,64 +109,69 @@ export const getUserDetailsByStaff = async (req, res) => {
   }
 };
 export const updateUserDetails = async (req, res) => {
-  const { account_number, aadhar_number, name, email, mobile_number, account_type } = req.body;
+  const {
+    account_number,
+    aadhar_number,
+    name,
+    email,
+    mobile_number,
+    account_type,
+  } = req.body;
 
   if (!account_number || !aadhar_number) {
     return res.status(400).json({
+      status: false,
       message: "Account number and Aadhaar number required",
     });
   }
 
   try {
+    /* 🔹 Fetch user & account */
+    const result = await sql`
+      SELECT 
+        u.id AS user_id,
+        a.id AS account_id
+      FROM users u
+      JOIN accounts a ON a.user_id = u.id
+      WHERE a.account_number = ${account_number}
+        AND u.aadhar_number = ${aadhar_number};
+    `;
 
-    const accountResult = await pool.query(
-      `
-      SELECT a.account_id, u.user_id
-      FROM accounts a
-      JOIN users u ON a.user_id = u.user_id
-      WHERE a.account_number = $1
-        AND u.aadhar_number = $2
-      `,
-      [account_number, aadhar_number]
-    );
-
-    if (accountResult.rows.length === 0) {
+    if (result.length === 0) {
       return res.status(404).json({
-        message: "Account or user not found",
+        status: false,
+        message: "User or account not found",
       });
     }
 
-    const { user_id, account_id } = accountResult.rows[0];
+    const { user_id, account_id } = result[0];
 
-
-    await pool.query(
-      `
+    /* 🔹 Update user table */
+    await sql`
       UPDATE users
       SET
-        name = $1,
-        email = $2,
-        mobile_number = $3
-      WHERE user_id = $4
-      `,
-      [name, email, mobile_number, user_id]
-    );
+        name = COALESCE(${name}, name),
+        email = COALESCE(${email}, email),
+        mobile_number = COALESCE(${mobile_number}, mobile_number)
+      WHERE id = ${user_id};
+    `;
 
-
-    await pool.query(
-      `
+    /* 🔹 Update account type (ID NOT CHANGED) */
+    await sql`
       UPDATE accounts
-      SET account_type = $1
-      WHERE account_id = $2
-      `,
-      [account_type, account_id]
-    );
+      SET account_type = COALESCE(${account_type}, account_type)
+      WHERE id = ${account_id};
+    `;
 
     return res.status(200).json({
+      status: true,
       message: "User details updated successfully",
     });
+
   } catch (error) {
     console.error("Update user error:", error);
     return res.status(500).json({
+      status: false,
       message: "Internal server error",
     });
   }
