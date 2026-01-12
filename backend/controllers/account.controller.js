@@ -32,50 +32,53 @@ export const newAccReqHistory = async (req, res) => {
 
 export const allAcc = async (req, res) => {
   try {
-
     const { status } = req.query;
 
     let rows;
 
     if (status === undefined) {
       rows = await sql`
-    SELECT 
-      a.name,
-      a.mobile_number,
-      a.aadhar_number,
-      a.pan_number,
-      b.account_number,
-      b.account_type,
-      b.status
-    FROM users a
-    JOIN accounts b ON a.id = b.user_id;
-  `;
+        SELECT 
+          a.name,
+          a.mobile_number,
+          a.aadhar_number,
+          a.pan_number,
+          b.account_number,
+          b.account_type,
+          b.status
+        FROM users a
+        JOIN accounts b ON a.id = b.user_id
+        ORDER BY b.account_number ASC;
+      `;
     } else {
       rows = await sql`
-    SELECT 
-      a.name,
-      a.mobile_number,
-      a.aadhar_number,
-      a.pan_number,
-      b.account_number,
-      b.account_type,
-      b.status
-    FROM users a
-    JOIN accounts b ON a.id = b.user_id
-    WHERE b.status = ${status};
-  `;
+        SELECT 
+          a.name,
+          a.mobile_number,
+          a.aadhar_number,
+          a.pan_number,
+          b.account_number,
+          b.account_type,
+          b.status
+        FROM users a
+        JOIN accounts b ON a.id = b.user_id
+        WHERE b.status = ${status}
+        ORDER BY b.account_number ASC;
+      `;
     }
-
-
 
     return res.status(200).json({
       status: true,
-      data: rows
+      data: rows,
     });
   } catch (error) {
-    res.status(500).json({ status: false, error: error.message });
+    return res.status(500).json({
+      status: false,
+      message: error.message,
+    });
   }
-}
+};
+
 export const chnageAccountStatus = async (req, res) => {
   try {
     const { requestId } = req.params;
@@ -247,6 +250,7 @@ export const updateAccountStatus = async (req, res) => {
   try {
     const { accountNumber } = req.params;
     const { status } = req.body;
+    console.log(accountNumber);
 
     if (!["active", "inactive", "closed", "suspended", "frozen"].includes(status)) {
       return res.status(400).json({ status: false, message: "Invalid status" });

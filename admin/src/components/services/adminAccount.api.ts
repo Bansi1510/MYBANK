@@ -127,3 +127,20 @@ export const getUserByAccNumber=async(accNumber:string):Promise<AccountDetails|n
     return null;
     }
 }
+
+export const updateAccountStatus=async(accountNumber:string,status:string):Promise<boolean>=>{
+  try { 
+      const res=await API.put(`${accountNumber}/status-update`,{status});
+      if(res.data.status){
+        return true;
+      }else{
+        toast.error(res.data.message);
+        return false;
+      }
+  } catch (error) {
+     const axiosErr = error as AxiosError<{ message?: string }>;
+    const msg = axiosErr.response?.data?.message || "can not update";
+    toast.error(msg);
+    return  false;
+  }
+}

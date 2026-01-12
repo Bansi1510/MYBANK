@@ -11,7 +11,7 @@ AccountRouter.put("/change-status/:requestId", isAuthenticated, isAdmin, chnageA
 AccountRouter.get("/new-acc-req-his", isAuthenticated, isAdmin, newAccReqHistory);
 AccountRouter.get("/all-acc", isAuthenticated, isAdminOrStaff, allAcc);
 AccountRouter.get("/:accountNumber", isAuthenticated, isAdminOrStaff, getAccountByNumber);
-AccountRouter.put("/:accountNumber/status", isAuthenticated, isAdminOrStaff, updateAccountStatus);
+AccountRouter.put("/:accountNumber/status-update", isAuthenticated, isAdminOrStaff, updateAccountStatus);
 AccountRouter.get("/:accountNumber/balance", isAuthenticated, isAdminOrStaff, getAccountBalance);
 AccountRouter.put("/:accountNumber/update-balance", isAuthenticated, isAdminOrStaff, updateAccountBalance);
 
