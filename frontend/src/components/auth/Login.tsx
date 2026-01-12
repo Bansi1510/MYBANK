@@ -33,8 +33,8 @@ const Login: React.FC = () => {
 
     const res = await Login_API(accountNumber, password);
     if (res) {
-      await OtpSendAPI(accountNumber, normalizedMobile);
-      setStep(2);
+      const isTrue = await OtpSendAPI(accountNumber, normalizedMobile);
+      if (isTrue) setStep(2);
     }
   };
 

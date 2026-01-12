@@ -218,7 +218,6 @@ export const loginUser = async (req, res) => {
 export const sendOTP = async (req, res) => {
   try {
     const { mobile_number, account_number } = req.body;
-    console.log(mobile_number, account_number);
     if (!mobile_number)
       return res.status(400).json({ status: false, message: "Mobile number required" });
 
@@ -230,7 +229,6 @@ export const sendOTP = async (req, res) => {
     AND a.account_number = ${account_number}
 `;
 
-    console.log(user);
     if (!user.length)
       return res.status(404).json({ status: false, message: "User not found" });
 
@@ -242,7 +240,7 @@ export const sendOTP = async (req, res) => {
       WHERE mobile_number = ${mobile_number}
     `;
 
-    // Send OTP to WhatsApp
+
     await sendWhatsappOTP(mobile_number, otp);
 
     return res.json({ status: true, message: "OTP sent to WhatsApp" });

@@ -32,19 +32,21 @@ export const Login_API = async (account_number: string, password: string): Promi
   }
 };
 
-export const OtpSendAPI = async (account_number: string, mobile_number: string): Promise<void> => {
+export const OtpSendAPI = async (account_number: string, mobile_number: string): Promise<boolean> => {
   try {
     const res = await API.post("user/send-otp", { account_number, mobile_number });
-    if (res.data.status) {
+     if (res.data.status) {
       toast.success(res.data.message);
+      return true;
     } else {
       toast.error(res.data.message);
+      return false;
     }
   } catch (error: unknown) {
     const axiosErr = error as AxiosError<{ message?: string }>;
     const msg = axiosErr.response?.data?.message || "OTP send Error";
     toast.error(msg);
-
+    return false;
   }
 }
 
