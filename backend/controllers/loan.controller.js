@@ -6,14 +6,17 @@ import sendEmail from "../utils/sendEmail.js";
 
 export const applyLoan = async (req, res) => {
   try {
-    const user_id = req.id;
-    console.log(req.role);
-    const { loan_type, loan_amount, tenure } = req.body;
+    const role = req.role; // 'user' | 'staff'
+    let user_id;
+
+    const { loan_type, loan_amount, tenure, account_number } = req.body;
+
+    /* ================= VALIDATION ================= */
 
     if (!loan_type || !loan_amount || !tenure) {
       return res.status(400).json({
-        message: "All fields are required",
         status: false,
+        message: "All fields are required",
       });
     }
 
@@ -30,13 +33,45 @@ export const applyLoan = async (req, res) => {
 
     if (!allowedLoanTypes.includes(loan_type)) {
       return res.status(400).json({
-        message: "Invalid loan type",
         status: false,
+        message: "Invalid loan type",
       });
     }
+
+
+    if (role === "user") {
+      user_id = req.id;
+    }
+
+    if (role === "staff") {
+      if (!account_number) {
+        return res.status(400).json({
+          status: false,
+          message: "Account number required",
+        });
+      }
+
+      const account = await sql`
+        SELECT user_id
+        FROM accounts
+        WHERE account_number = ${account_number};
+      `;
+
+      if (account.length === 0) {
+        return res.status(404).json({
+          status: false,
+          message: "Invalid account number",
+        });
+      }
+
+      user_id = account[0].user_id;
+    }
+
+    /* ================= FILE UPLOAD ================= */
+
     const uploadedFiles = {};
 
-    if (req.files && req.files.length > 0) {
+    if (req.files?.length > 0) {
       for (const file of req.files) {
         const fieldName = file.fieldname;
 
@@ -63,36 +98,44 @@ export const applyLoan = async (req, res) => {
       }
     }
 
-    const query = `
-      INSERT INTO loan_req 
-      (user_id, loan_type, loan_amount, tenure, documents)
-      VALUES ($1, $2, $3, $4, $5)
+    /* ================= INSERT ================= */
+
+    const loan = await sql`
+      INSERT INTO loan_req (
+        user_id,
+        loan_type,
+        loan_amount,
+        tenure,
+        documents,
+        staff_approved
+      )
+      VALUES (
+        ${user_id},
+        ${loan_type},
+        ${loan_amount},
+        ${loan_amount},
+        ${Object.keys(uploadedFiles).length ? uploadedFiles : null},
+        ${role === "staff"}
+      )
       RETURNING *;
     `;
 
-    const values = [
-      user_id,
-      loan_type,
-      loan_amount,
-      tenure,
-      Object.keys(uploadedFiles).length ? uploadedFiles : null,
-    ];
+    /* ================= RESPONSE ================= */
 
-    const result = await sql.query(query, values);
-
-    res.status(201).json({
-      message: "Loan request submitted successfully",
+    return res.status(201).json({
       status: true,
-      loanRequest: result[0],
+      message: "Loan request submitted successfully",
     });
+
   } catch (error) {
-    console.error(error);
-    res.status(500).json({
-      message: "Server error",
+    console.error("Apply loan error:", error);
+    return res.status(500).json({
       status: false,
+      message: "Server error",
     });
   }
 };
+
 export const getLoanReq = async (req, res) => {
   try {
     const loans = await sql`

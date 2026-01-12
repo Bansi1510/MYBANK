@@ -174,3 +174,20 @@ export const payLoanEmiAPI=async(amount:number,payment_method:string,policy_numb
       return false;
   }
 }
+
+export const applyLoanByStaffAPI=async(formData:FormData):Promise<boolean>=>{
+  try {
+      const res=await API.post("apply-loan",formData);
+      if(res.data.status){
+        toast.success(res.data.message);
+        return true;
+      }
+      toast.error(res.data.message);
+      return false;
+  }catch (error:unknown) {
+      const axiosErr=error as AxiosError<{message?:string}>;
+      const msg=axiosErr.response?.data.message||"Loan application can not ";
+      toast.error(msg);
+      return false;
+  }
+}

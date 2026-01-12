@@ -34,6 +34,8 @@ import AccountTransfer from './components/staff/staff-transactions/AccountTransf
 import CashTransactionForm from './components/staff/staff-transactions/CashTransactionForm'
 import StaffTransactionViewer from './components/common/StaffTransactionViewer'
 import UpdateUserDetails from './components/staff/customer-account/UpdateUserDetails'
+import StaffApplyLoan from './components/staff/customer-loan/StaffApplyLoan'
+
 
 
 
@@ -111,6 +113,7 @@ const appRouter = createBrowserRouter([
         path: "customer-loan",
         element: <CustomerLoan />,
         children: [
+          { path: "apply-loan", element: <StaffApplyLoan /> },
           { path: "loan-applications", element: <LoanRequestList /> },
           { path: "loan-applications/details/:loan_id", element: <SingleLoanRequest /> },
           { path: "loan-emi-payment", element: <LoanEmiPanel /> }
