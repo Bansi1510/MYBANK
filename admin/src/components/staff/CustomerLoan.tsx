@@ -19,11 +19,6 @@ const CustomerLoan: React.FC = () => {
       link: "loan-applications",
     },
     {
-      label: "Approve / Reject Loan",
-      desc: "Process pending loan requests",
-      link: "loan-approval",
-    },
-    {
       label: "Active Loans",
       desc: "View running customer loans",
       link: "active-loans",

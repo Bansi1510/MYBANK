@@ -374,11 +374,12 @@ MYBANK`
           )
         `;
 
-        // 4️⃣ Delete loan request
         await sql`
-          DELETE FROM loan_req
-          WHERE id = ${loan_id}
-        `;
+        UPDATE loan_req
+        SET staff_approved = true,
+            status = 'loan_approve'
+        WHERE id = ${loan_id}
+      `;
 
         /* 🔹 COMMIT ONLY IF ALL SUCCESS */
         await sql`COMMIT`;

@@ -37,14 +37,14 @@ const MyCards: React.FC = () => {
 
   return (
     <div className="space-y-4">
-      {cards.map((card, index) => (
+      {cards && cards?.map((card, index) => (
         <div
           key={index}
           className="border rounded-lg bg-white p-5"
         >
           <div className="flex justify-between items-center mb-3">
             <h3 className="text-sm font-semibold text-gray-800">
-              {card.card_type.toUpperCase()} Card
+              {card?.card_type?.toUpperCase()} Card
             </h3>
 
             <span
