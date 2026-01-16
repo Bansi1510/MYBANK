@@ -8,7 +8,6 @@ const CustomerCards: React.FC = () => {
   const actions = [
     { label: "New Card Request", desc: "Request a new debit or credit card", link: "new-card" },
     { label: "View All Cards", desc: "See all issued customer cards", link: "all-cards" },
-    { label: "Block / Unblock Card", desc: "Manage card security status", link: "block-card" },
     { label: "Replace Card", desc: "Request replacement for lost or damaged card", link: "replace-card" },
     { label: "Card PIN Services", desc: "Generate or reset card PIN", link: "card-pin" },
   ];

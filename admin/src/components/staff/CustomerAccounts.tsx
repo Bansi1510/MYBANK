@@ -10,7 +10,6 @@ const CustomerAccounts: React.FC = () => {
     { label: "New Bank Account Request", desc: "Create a new customer account", link: "new-account" },
     { label: "Update Customer Details", desc: "Modify customer information", link: "update-customer" },
     { label: "View All Accounts", desc: "Check all active accounts", link: "all-accounts" },
-    { label: "KYC Verification", desc: "Verify customer identity", link: "kyc" },
   ];
 
   return (
