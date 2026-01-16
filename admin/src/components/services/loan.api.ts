@@ -191,3 +191,35 @@ export const applyLoanByStaffAPI=async(formData:FormData):Promise<boolean>=>{
       return false;
   }
 }
+
+export interface LoanDetails {
+  loan_id: number;
+  loan_type: string;
+  loan_amount: number;
+  tenure: number;
+  status: string;
+  loan_req_id: number | null;
+  policy_number: string | null;
+  created_at: string; // ISO date string
+}
+export interface AllLoanDetailsResponse {
+  status: boolean;
+  data: LoanDetails[];
+}
+
+export const getAllLoansAPI=async():Promise<AllLoanDetailsResponse|[]>=>{
+  try {
+    const res=await API.get("loans");
+    if(res.data.status){
+      return res.data.data;
+    }else{
+      toast.error(res.data.message);
+      return [];
+    }
+  }  catch (error:unknown) {
+      const axiosErr=error as AxiosError<{message?:string}>;
+      const msg=axiosErr.response?.data.message||"Loan  Payment can not ";
+      toast.error(msg);
+      return [];
+  }
+}

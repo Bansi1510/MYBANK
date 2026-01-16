@@ -503,7 +503,7 @@ export const loanDetails = async (req, res) => {
             l.status,
             l.created_at,
             l.loan_req_id,
-             l.policy_number
+            l.policy_number
 
           FROM loans l
          

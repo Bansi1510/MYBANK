@@ -36,6 +36,7 @@ import StaffTransactionViewer from './components/common/StaffTransactionViewer'
 import UpdateUserDetails from './components/staff/customer-account/UpdateUserDetails'
 import StaffApplyLoan from './components/staff/customer-loan/StaffApplyLoan'
 import TransactionDashboard from './components/common/TransactionDashboard'
+import GetAllLoans from './components/common/GetAllLoans'
 
 
 
@@ -117,7 +118,9 @@ const appRouter = createBrowserRouter([
           { path: "apply-loan", element: <StaffApplyLoan /> },
           { path: "loan-applications", element: <LoanRequestList /> },
           { path: "loan-applications/details/:loan_id", element: <SingleLoanRequest /> },
-          { path: "loan-emi-payment", element: <LoanEmiPanel /> }
+          { path: "loan-emi-payment", element: <LoanEmiPanel /> },
+          { path: "active-loans", element: <GetAllLoans /> },
+          { path: "active-loans/:loanId", element:}
 
         ]
       },
