@@ -86,3 +86,43 @@ export const getTransactionDetailsByAccNo=async(account_number:string,start_date
        return [];
   }
 }
+
+// Interfaces
+export interface Transaction {
+  id: number;
+  account_number: string;
+  transaction_type: string;
+  amount: number;
+  currency: string;
+  from_account: string | null;
+  to_account: string | null;
+  description: string | null;
+  status: string;
+  created_at: string; // ISO date string
+  initiated_by_user: number | null;
+  initiated_by_staff: number | null;
+}
+
+export interface TransactionDashboardData {
+  summary: {
+    total_transactions: number;
+    total_amount: number;
+  };
+  transactions: Transaction[];
+}
+
+export const getTransactionSummaryAPI=async(filter:string):Promise<TransactionDashboardData|null>=>{
+  try {
+    const res=await API.get("summary",{params:{type:filter}});
+    if(res.data.status){
+      return res.data;
+    }
+    toast.success(res.data.message);
+    return null;
+  } catch (error:unknown) {
+      const axiosErr=error as AxiosError<{message?:string}>;
+       const msg=axiosErr.response?.data.message||"we can not fetch  transactions history ";
+       toast.error(msg);
+       return null;
+  }
+}

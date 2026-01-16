@@ -35,6 +35,7 @@ import CashTransactionForm from './components/staff/staff-transactions/CashTrans
 import StaffTransactionViewer from './components/common/StaffTransactionViewer'
 import UpdateUserDetails from './components/staff/customer-account/UpdateUserDetails'
 import StaffApplyLoan from './components/staff/customer-loan/StaffApplyLoan'
+import TransactionDashboard from './components/common/TransactionDashboard'
 
 
 
@@ -136,7 +137,8 @@ const appRouter = createBrowserRouter([
         children: [
           { path: "account-transfer", element: <AccountTransfer /> },
           { path: "cash-transaction", element: <CashTransactionForm /> },
-          { path: "transaction", element: <StaffTransactionViewer /> }
+          { path: "transaction", element: <StaffTransactionViewer /> },
+          { path: "daily-report", element: <TransactionDashboard /> }
         ]
       },
       { path: "kyc", element: <KYCVerification /> },

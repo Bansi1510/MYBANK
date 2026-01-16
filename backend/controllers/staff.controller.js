@@ -176,3 +176,4 @@ export const updateUserDetails = async (req, res) => {
     });
   }
 };
+

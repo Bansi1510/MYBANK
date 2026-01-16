@@ -88,3 +88,5 @@ export const updateUserDetails=async(data:UserDetails):Promise<boolean>=>{
     return false;
   }
 }
+
+ 

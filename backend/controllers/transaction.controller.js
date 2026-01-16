@@ -752,3 +752,53 @@ export const transferViaMobile = async (req, res) => {
     });
   }
 };
+export const transactionSummary = async (req, res) => {
+  try {
+    const type = req.query.type || "today"; // 'today' | 'month' | 'year'
+
+    // --- Aggregate summary ---
+    const summaryResult = await sql`
+      SELECT
+        COUNT(*) AS total_transactions,
+        COALESCE(SUM(amount), 0) AS total_amount
+      FROM transactions
+      WHERE status = 'success'
+        AND (
+          ('today' = ${type} AND DATE(created_at) = CURRENT_DATE)
+          OR ('month' = ${type} AND EXTRACT(MONTH FROM created_at) = EXTRACT(MONTH FROM CURRENT_DATE)
+              AND EXTRACT(YEAR FROM created_at) = EXTRACT(YEAR FROM CURRENT_DATE))
+          OR ('year' = ${type} AND EXTRACT(YEAR FROM created_at) = EXTRACT(YEAR FROM CURRENT_DATE))
+        );
+    `;
+
+    const summary = summaryResult?.[0] || { total_transactions: 0, total_amount: 0 };
+
+    // --- Full transaction rows ---
+    const transactions = await sql`
+      SELECT *
+      FROM transactions
+      WHERE status = 'success'
+        AND (
+          ('today' = ${type} AND DATE(created_at) = CURRENT_DATE)
+          OR ('month' = ${type} AND EXTRACT(MONTH FROM created_at) = EXTRACT(MONTH FROM CURRENT_DATE)
+              AND EXTRACT(YEAR FROM created_at) = EXTRACT(YEAR FROM CURRENT_DATE))
+          OR ('year' = ${type} AND EXTRACT(YEAR FROM created_at) = EXTRACT(YEAR FROM CURRENT_DATE))
+        )
+      ORDER BY created_at DESC
+      LIMIT 500;
+    `;
+
+    return res.status(200).json({
+      status: true,
+      filter: type,
+      summary,
+      transactions,
+    });
+  } catch (error) {
+    console.error("❌ Transaction Summary Error:", error);
+    return res.status(500).json({
+      status: false,
+      message: "Unable to fetch transaction summary",
+    });
+  }
+};
