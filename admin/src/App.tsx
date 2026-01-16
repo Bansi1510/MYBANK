@@ -85,6 +85,7 @@ const appRouter = createBrowserRouter([
         children: [
           { path: "pending", element: <LoanRequestList /> },
           { path: "pending/details/:loan_id", element: <AdminSingleLoanRequest /> },
+          { path: "approved", element: <GetAllLoans /> }
         ]
 
       },
