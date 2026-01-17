@@ -12,40 +12,10 @@ const LoanApproval: React.FC = () => {
       link: "pending",
     },
     {
-      label: "Approved Loans",
+      label: "All Loans",
       desc: "View approved loan records",
-      link: "approved",
-    },
-    {
-      label: "Rejected Loans",
-      desc: "View rejected loan applications",
-      link: "rejected",
-    },
-    {
-      label: "Loan Disbursements",
-      desc: "Track disbursed loan amounts",
-      link: "disbursements",
-    },
-    {
-      label: "Loan Documents",
-      desc: "Verify submitted loan documents",
-      link: "documents",
-    },
-    {
-      label: "Loan Reports",
-      desc: "Generate loan analytics and reports",
-      link: "reports",
-    },
-    {
-      label: "Interest Settings",
-      desc: "Manage loan interest configurations",
-      link: "interest-settings",
-    },
-    {
-      label: "Loan Alerts",
-      desc: "Monitor loan-related alerts",
-      link: "alerts",
-    },
+      link: "all-loan",
+    }
   ];
 
   return (

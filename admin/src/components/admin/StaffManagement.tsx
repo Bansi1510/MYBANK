@@ -15,22 +15,7 @@ const StaffManagement: React.FC = () => {
       title: "Add Staff",
       desc: "Add new staff members",
       link: "add",
-    },
-    {
-      title: "Edit Staff",
-      desc: "Update staff information",
-      link: "edit",
-    },
-    {
-      title: "Attendance",
-      desc: "Monitor staff attendance",
-      link: "attendance",
-    },
-    {
-      title: "Leave Requests",
-      desc: "Approve or reject leave requests",
-      link: "leave-requests",
-    },
+    }
   ];
 
   return (

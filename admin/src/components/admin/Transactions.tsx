@@ -1,13 +1,31 @@
 import React from "react";
 import { Outlet, Link, useOutlet } from "react-router-dom";
 
-const CardManagement: React.FC = () => {
+const Transactions: React.FC = () => {
   const outlet = useOutlet();
   const isChildActive = !!outlet;
 
   const actions = [
-    { label: "Card Requests", desc: "Review and process card requests", link: "card-requests" },
-    { label: "Issued Cards", desc: "View all active customer cards", link: "all-cards" },
+    {
+      label: "All Transactions",
+      desc: "View all customer transactions",
+      link: "all-transactions",
+    },
+    {
+      label: "Staff Transactions",
+      desc: "Transactions performed by staff",
+      link: "staff-transactions",
+    },
+    {
+      label: "Cash Deposit",
+      desc: "Deposit cash into customer account",
+      link: "cash-deposit",
+    },
+    {
+      label: "Cash Withdrawal",
+      desc: "Withdraw cash from customer account",
+      link: "cash-withdrawal",
+    },
   ];
 
   return (
@@ -15,7 +33,7 @@ const CardManagement: React.FC = () => {
       {!isChildActive && (
         <div className="p-6">
           <h1 className="text-2xl font-semibold mb-6 text-gray-900">
-            Card Management
+            Transaction Management
           </h1>
 
           <div className="grid grid-cols-1 sm:grid-cols-2 md:grid-cols-4 gap-4">
@@ -23,12 +41,12 @@ const CardManagement: React.FC = () => {
               <Link
                 key={item.link}
                 to={item.link}
-                className="bg-blue-600 text-white rounded-lg p-5 shadow-sm hover:bg-blue-700 transition"
+                className="bg-green-600 text-white rounded-lg p-5 shadow-sm hover:bg-green-700 transition"
               >
                 <div className="font-semibold">
                   {item.label}
                 </div>
-                <div className="text-sm text-blue-100 mt-1">
+                <div className="text-sm text-green-100 mt-1">
                   {item.desc}
                 </div>
               </Link>
@@ -44,4 +62,4 @@ const CardManagement: React.FC = () => {
   );
 };
 
-export default CardManagement;
+export default Transactions;

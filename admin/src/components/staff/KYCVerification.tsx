@@ -16,16 +16,6 @@ const KYCVerification: React.FC = () => {
       desc: "View YC records",
       link: "all-kyc",
     },
-    {
-      label: "Upload Documents",
-      desc: "Add missing KYC documents",
-      link: "upload-docs",
-    },
-    {
-      label: "KYC Audit Logs",
-      desc: "View verification history",
-      link: "audit",
-    },
   ];
 
   return (

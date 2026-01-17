@@ -40,6 +40,7 @@ import GetAllLoans from './components/common/GetAllLoans'
 import LoanDetail from './components/common/LoanDetail'
 import CreateKYC from './components/staff/kyc-verification/CreateKYC'
 import AllKYCList from './components/staff/kyc-verification/AllKYCList'
+import Transactions from './components/admin/Transactions'
 
 
 
@@ -87,7 +88,7 @@ const appRouter = createBrowserRouter([
         children: [
           { path: "pending", element: <LoanRequestList /> },
           { path: "pending/details/:loan_id", element: <AdminSingleLoanRequest /> },
-          { path: "approved", element: <GetAllLoans /> }
+          { path: "all-loan", element: <GetAllLoans /> }
         ]
 
       },
@@ -98,6 +99,10 @@ const appRouter = createBrowserRouter([
           { path: "card-requests", element: <AdminCardRequestList /> },
           { path: "all-cards", element: <AllCardsList /> }
         ]
+      },
+      {
+        path: "transactions",
+        element: <Transactions />
       }
     ],
   },
