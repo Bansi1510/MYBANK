@@ -28,3 +28,36 @@ export const createKycAPI = async (account_number:string,pan_number:string,aadha
     return false;
   }
 }
+
+export const getKYCsAPI=async():Promise<PendingKYC|[]>=>{
+  try {
+    const res=await API.get("pending");
+    if(res.data.status) return res.data.data;
+    toast.error(res.data.message);
+    return [];
+
+  } catch (error: unknown) {
+    const axiosErr = error as AxiosError<{ message?: string }>;
+    const msg = axiosErr.response?.data?.message || "can not create KYC";
+    toast.error(msg);
+    return [];
+  }
+}
+
+export const updateKycStatusAPI=async(kyc_id:number,status:string,reason?:string):Promise<boolean>=>{
+    try {
+      const res=await API.put(`${kyc_id}/status`,{status,reason});
+      if(res.data.status){
+        toast.success(res.data.message);
+        return true;
+      }else{
+        toast.error(res.data.message);
+        return false;
+      }
+    }catch (error: unknown) {
+    const axiosErr = error as AxiosError<{ message?: string }>;
+    const msg = axiosErr.response?.data?.message || "can not create KYC";
+    toast.error(msg);
+    return false;
+  }
+}
