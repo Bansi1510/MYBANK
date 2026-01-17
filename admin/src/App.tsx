@@ -39,6 +39,7 @@ import TransactionDashboard from './components/common/TransactionDashboard'
 import GetAllLoans from './components/common/GetAllLoans'
 import LoanDetail from './components/common/LoanDetail'
 import CreateKYC from './components/staff/kyc-verification/CreateKYC'
+import AllKYCList from './components/staff/kyc-verification/AllKYCList'
 
 
 
@@ -152,7 +153,8 @@ const appRouter = createBrowserRouter([
         path: "kyc",
         element: <KYCVerification />,
         children: [
-          { path: "create", element: <CreateKYC /> }
+          { path: "create", element: <CreateKYC /> },
+          { path: "all-kyc", element: <AllKYCList /> }
         ]
 
       },

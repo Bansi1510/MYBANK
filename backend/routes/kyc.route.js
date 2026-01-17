@@ -7,8 +7,8 @@ import {
   createKYC,
   getPendingKYC,
   getKYCById,
-  uploadKYCDocument,
-  updateKYCStatus
+  updateKYCStatus,
+  getAllKYCs
 } from "../controllers/kyc.controller.js";
 
 const KycRouter = express.Router();
@@ -19,15 +19,13 @@ const KycRouter = express.Router();
 KycRouter.post("/create", isAuthenticated, isAdminOrStaff, createKYC);
 
 // Upload KYC document
-KycRouter.post("/document/upload", isAuthenticated, dynamicUpload, uploadKYCDocument);
 
 /* ================= STAFF / ADMIN ================= */
 
 // Get all pending KYC
 KycRouter.get("/pending", isAuthenticated, isAdminOrStaff, getPendingKYC);
-
+KycRouter.get("/all-kyc", isAuthenticated, isAdminOrStaff, getAllKYCs);
 // Get KYC details by ID
 KycRouter.get("/:kyc_id", isAuthenticated, isAdminOrStaff, getKYCById);
-
 KycRouter.put("/:kyc_id/status", isAuthenticated, isAdminOrStaff, updateKYCStatus);
 export default KycRouter;

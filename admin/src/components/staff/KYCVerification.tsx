@@ -12,19 +12,9 @@ const KYCVerification: React.FC = () => {
       link: "create",
     },
     {
-      label: "Verified KYC",
-      desc: "View approved KYC records",
-      link: "verified",
-    },
-    {
-      label: "Rejected KYC",
-      desc: "View rejected KYC cases",
-      link: "rejected",
-    },
-    {
-      label: "Re-KYC Requests",
-      desc: "Handle re-verification cases",
-      link: "re-kyc",
+      label: "All KYC",
+      desc: "View YC records",
+      link: "all-kyc",
     },
     {
       label: "Upload Documents",
