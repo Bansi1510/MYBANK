@@ -268,3 +268,47 @@ CREATE INDEX idx_transactions_account_number ON transactions(account_number);
 CREATE INDEX idx_transactions_created_at ON transactions(created_at);
 CREATE INDEX idx_accounts_user_id ON accounts(user_id);
 CREATE INDEX idx_loans_user_id ON loans(user_id);
+
+
+CREATE TABLE kyc (
+  kyc_id SERIAL PRIMARY KEY,
+  customer_id INT NOT NULL,
+  pan_number VARCHAR(10) NOT NULL,
+  aadhaar_last4 CHAR(4),
+  kyc_type VARCHAR(20) DEFAULT 'FULL',
+  kyc_status VARCHAR(20) DEFAULT 'PENDING',
+  rejection_reason VARCHAR(255),
+  verified_by INT,
+  verified_at TIMESTAMP,
+  created_at TIMESTAMP DEFAULT CURRENT_TIMESTAMP,
+  updated_at TIMESTAMP DEFAULT CURRENT_TIMESTAMP,
+  CONSTRAINT fk_kyc_customer
+    FOREIGN KEY (customer_id) REFERENCES users(id)
+);
+CREATE TABLE kyc_documents (
+  doc_id INT IDENTITY PRIMARY KEY,
+  kyc_id INT NOT NULL,
+
+  doc_type VARCHAR(30), 
+  -- PAN | AADHAAR | PASSPORT | VIDEO | PHOTO
+
+  doc_url VARCHAR(255) NOT NULL,
+  doc_status VARCHAR(20) DEFAULT 'PENDING',
+  -- PENDING | VERIFIED | REJECTED
+
+  uploaded_at DATETIME DEFAULT GETDATE(),
+
+  CONSTRAINT fk_kyc_doc
+    FOREIGN KEY (kyc_id) REFERENCES kyc(kyc_id)
+);
+CREATE TABLE kyc_audit_logs (
+  log_id INT IDENTITY PRIMARY KEY,
+  kyc_id INT,
+  staff_id INT,
+
+  action VARCHAR(50),
+  -- APPROVED | REJECTED | RE_KYC | DOC_UPLOADED
+
+  remarks VARCHAR(255),
+  created_at DATETIME DEFAULT GETDATE()
+);
