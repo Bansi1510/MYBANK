@@ -61,3 +61,55 @@ export const updateKycStatusAPI=async(kyc_id:number,status:string,reason?:string
     return false;
   }
 }
+export interface KYCItem {
+  kyc_id: number;
+  customer_id: number;
+  name: string;
+  account_number: string;
+  pan_number: string;
+  aadhaar_last4: string;
+  kyc_status: "PENDING" | "VERIFIED" | "REJECTED";
+  verified_by: number | null;
+  verified_at: string | null;
+  rejection_reason: string | null;
+  created_at: string;
+}
+
+export const getAllKYCAPI=async():Promise<KYCItem[]|[]>=>{
+  try {
+    const res=await API.get("all-kyc");
+    if(res.data.status) return res.data.data;
+    toast.error(res.data.message);
+    return [];
+  } catch (error: unknown) {
+    const axiosErr = error as AxiosError<{ message?: string }>;
+    const msg = axiosErr.response?.data?.message || "can not create KYC";
+    toast.error(msg);
+    return  [];
+  }
+}
+export interface KYCDetail{
+    kyc_id: number;
+    name: string;
+    email: string;
+    mobile_number: string;
+    pan_number: string;
+    aadhaar_last4: string;
+    kyc_type: string;
+    kyc_status: string;
+    rejection_reason: string | null;
+};
+
+export const getKYCById=async(kyc_id:number):Promise<KYCDetail|null>=>{
+  try {
+      const res=await API.get(`${kyc_id}`);
+      if(res.data.status) return res.data.kyc;
+      toast.error(res.data.message);
+      return null;
+  } catch (error: unknown) {
+    const axiosErr = error as AxiosError<{ message?: string }>;
+    const msg = axiosErr.response?.data?.message || "can not create KYC";
+    toast.error(msg);
+    return null;
+  }
+}

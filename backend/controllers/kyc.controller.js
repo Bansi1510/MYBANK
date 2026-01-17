@@ -24,7 +24,7 @@ export const createKYC = async (req, res) => {
 
     // Check if KYC already exists for this customer
     const existing = await sql`
-      SELECT kyc_id FROM kyc WHERE customer_id = ${customer_id}
+      SELECT kyc_id FROM kyc WHERE customer_id = ${customer_id} AND kyc_status='VERIFIED'
     `;
 
     if (existing.length > 0) {
@@ -43,46 +43,6 @@ export const createKYC = async (req, res) => {
     res.status(500).json({ status: false, message: "KYC creation failed" });
   }
 };
-
-
-// Upload KYC document
-export const uploadKYCDocument = async (req, res) => {
-  try {
-    const { kyc_id, doc_type } = req.body;
-
-    if (!req.files || req.files.length === 0) {
-      return res.status(400).json({ status: false, message: "No files uploaded" });
-    }
-
-    const uploadedFiles = [];
-
-    for (const file of req.files) {
-      const fileUri = getDataUri(file).content;
-
-      const result = await cloudinary.uploader.upload(fileUri, {
-        folder: `kyc_documents/${kyc_id}`,
-      });
-
-      await sql`
-        INSERT INTO kyc_documents (kyc_id, doc_type, doc_url)
-        VALUES (${kyc_id}, ${doc_type}, ${result.secure_url})
-      `;
-
-      uploadedFiles.push(result.secure_url);
-    }
-
-    res.status(200).json({
-      status: true,
-      message: "Document(s) uploaded successfully",
-      files: uploadedFiles,
-    });
-  } catch (err) {
-    console.error(err);
-    res.status(500).json({ status: false, message: "Document upload failed" });
-  }
-};
-// ================= STAFF / ADMIN =================
-
 // Get all pending KYC
 export const getPendingKYC = async (req, res) => {
   try {
@@ -114,12 +74,7 @@ export const getKYCById = async (req, res) => {
       JOIN users u ON u.id = k.customer_id
       WHERE k.kyc_id = ${kyc_id}
     `;
-
-    const documents = await sql`
-      SELECT * FROM kyc_documents WHERE kyc_id = ${kyc_id}
-    `;
-
-    res.status(200).json({ status: true, kyc: kyc[0], documents });
+    res.status(200).json({ status: true, kyc: kyc[0] });
   } catch {
     res.status(500).json({ status: false, message: "Failed to load KYC details" });
   }
@@ -167,5 +122,63 @@ export const updateKYCStatus = async (req, res) => {
   } catch (err) {
     console.error(err);
     res.status(500).json({ status: false, message: "KYC update failed" });
+  }
+};
+export const getAllKYCs = async (req, res) => {
+  try {
+    const { status } = req.query;
+    let kycs;
+
+    if (status) {
+      kycs = await sql`
+        SELECT 
+          k.kyc_id,
+          k.customer_id,
+          u.name,
+          a.account_number,
+          k.pan_number,
+          k.aadhaar_last4,
+          k.kyc_status,
+          k.verified_by,
+          k.verified_at,
+          k.rejection_reason,
+          k.created_at
+        FROM kyc k
+        JOIN users u ON u.id = k.customer_id
+        JOIN accounts a ON a.user_id = u.id
+        WHERE k.kyc_status = ${status}
+        ORDER BY k.created_at DESC
+      `;
+    } else {
+      kycs = await sql`
+        SELECT 
+          k.kyc_id,
+          k.customer_id,
+          u.name,
+          a.account_number,
+          k.pan_number,
+          k.aadhaar_last4,
+          k.kyc_status,
+          k.verified_by,
+          k.verified_at,
+          k.rejection_reason,
+          k.created_at
+        FROM kyc k
+        JOIN users u ON u.id = k.customer_id
+        JOIN accounts a ON a.user_id = u.id
+        ORDER BY k.created_at DESC
+      `;
+    }
+
+    res.status(200).json({
+      status: true,
+      data: kycs,
+    });
+  } catch (err) {
+    console.error("Get KYC Error:", err);
+    res.status(500).json({
+      status: false,
+      message: "Failed to fetch KYC details",
+    });
   }
 };
