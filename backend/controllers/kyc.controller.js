@@ -3,29 +3,47 @@ import getDataUri from "../utils/datauri.js";
 import sql from "../utils/db.js";
 
 
+
 export const createKYC = async (req, res) => {
   try {
-    const customer_id = req.id; // from JWT
-    const { pan_number, aadhaar_last4 } = req.body;
 
+    const { account_number, pan_number, aadhaar_last4 } = req.body;
+
+    if (!account_number) {
+      return res.status(400).json({ status: false, message: "Account number is required" });
+    }
+    const user = await sql`
+      SELECT user_id FROM accounts WHERE account_number = ${account_number}
+    `;
+
+    if (!user || user.length === 0) {
+      return res.status(404).json({ status: false, message: "Account not found" });
+    }
+
+    const customer_id = user[0].user_id;
+
+    // Check if KYC already exists for this customer
     const existing = await sql`
       SELECT kyc_id FROM kyc WHERE customer_id = ${customer_id}
     `;
 
     if (existing.length > 0) {
-      return res.status(400).json({ message: "KYC already exists" });
+      return res.status(400).json({ status: false, message: "KYC already exists for this customer" });
     }
 
+    // Insert KYC
     await sql`
       INSERT INTO kyc (customer_id, pan_number, aadhaar_last4)
       VALUES (${customer_id}, ${pan_number}, ${aadhaar_last4})
     `;
 
-    res.json({ message: "KYC submitted successfully" });
-  } catch {
-    res.status(500).json({ message: "KYC submission failed" });
+    res.json({ status: true, message: "KYC created successfully", customer_id });
+  } catch (err) {
+    console.error(err);
+    res.status(500).json({ status: false, message: "KYC creation failed" });
   }
 };
+
 
 // Upload KYC document
 export const uploadKYCDocument = async (req, res) => {
@@ -33,7 +51,7 @@ export const uploadKYCDocument = async (req, res) => {
     const { kyc_id, doc_type } = req.body;
 
     if (!req.files || req.files.length === 0) {
-      return res.status(400).json({ message: "No files uploaded" });
+      return res.status(400).json({ status: false, message: "No files uploaded" });
     }
 
     const uploadedFiles = [];
@@ -53,13 +71,14 @@ export const uploadKYCDocument = async (req, res) => {
       uploadedFiles.push(result.secure_url);
     }
 
-    res.json({
+    res.status(200).json({
+      status: true,
       message: "Document(s) uploaded successfully",
       files: uploadedFiles,
     });
   } catch (err) {
     console.error(err);
-    res.status(500).json({ message: "Document upload failed" });
+    res.status(500).json({ status: false, message: "Document upload failed" });
   }
 };
 // ================= STAFF / ADMIN =================
@@ -75,7 +94,10 @@ export const getPendingKYC = async (req, res) => {
       ORDER BY k.created_at DESC
     `;
 
-    res.json(data);
+    res.status(200).json({
+      status: true,
+      data
+    });
   } catch {
     res.status(500).json({ message: "Failed to fetch pending KYC" });
   }
@@ -97,9 +119,9 @@ export const getKYCById = async (req, res) => {
       SELECT * FROM kyc_documents WHERE kyc_id = ${kyc_id}
     `;
 
-    res.json({ kyc: kyc[0], documents });
+    res.status(200).json({ status: true, kyc: kyc[0], documents });
   } catch {
-    res.status(500).json({ message: "Failed to load KYC details" });
+    res.status(500).json({ status: false, message: "Failed to load KYC details" });
   }
 };
 
@@ -117,9 +139,9 @@ export const approveKYC = async (req, res) => {
       WHERE kyc_id = ${kyc_id}
     `;
 
-    res.json({ message: "KYC approved successfully" });
+    res.status(200).json({ status: true, message: "KYC approved successfully" });
   } catch {
-    res.status(500).json({ message: "KYC approval failed" });
+    res.status(500).json({ status: false, message: "KYC approval failed" });
   }
 };
 
@@ -136,8 +158,8 @@ export const rejectKYC = async (req, res) => {
       WHERE kyc_id = ${kyc_id}
     `;
 
-    res.json({ message: "KYC rejected" });
+    res.status(200).json({ status: true, message: "KYC rejected" });
   } catch {
-    res.status(500).json({ message: "KYC rejection failed" });
+    res.status(500).json({ status: false, message: "KYC rejection failed" });
   }
 };

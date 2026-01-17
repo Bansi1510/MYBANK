@@ -17,7 +17,7 @@ const KycRouter = express.Router();
 /* ================= CUSTOMER ================= */
 
 // Create KYC
-KycRouter.post("/create", isAuthenticated, createKYC);
+KycRouter.post("/create", isAuthenticated, isAdminOrStaff, createKYC);
 
 // Upload KYC document
 KycRouter.post("/document/upload", isAuthenticated, dynamicUpload, uploadKYCDocument);

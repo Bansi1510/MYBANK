@@ -7,9 +7,9 @@ const KYCVerification: React.FC = () => {
 
   const actions = [
     {
-      label: "Pending KYC",
+      label: "Create KYC",
       desc: "Verify customer KYC requests",
-      link: "pending",
+      link: "create",
     },
     {
       label: "Verified KYC",
