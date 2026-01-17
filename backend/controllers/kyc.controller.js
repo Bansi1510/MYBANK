@@ -126,40 +126,46 @@ export const getKYCById = async (req, res) => {
 };
 
 // Approve KYC
-export const approveKYC = async (req, res) => {
+export const updateKYCStatus = async (req, res) => {
   try {
     const { kyc_id } = req.params;
+    const { status, reason } = req.body;
     const staff_id = req.id;
 
-    await sql`
-      UPDATE kyc
-      SET kyc_status = 'VERIFIED',
-          verified_by = ${staff_id},
-          verified_at = NOW()
-      WHERE kyc_id = ${kyc_id}
-    `;
+    if (!["VERIFIED", "REJECTED"].includes(status)) {
+      return res
+        .status(400)
+        .json({ status: false, message: "Invalid KYC status" });
+    }
 
-    res.status(200).json({ status: true, message: "KYC approved successfully" });
-  } catch {
-    res.status(500).json({ status: false, message: "KYC approval failed" });
-  }
-};
+    // Build SQL dynamically based on status
+    if (status === "VERIFIED") {
+      await sql`
+        UPDATE kyc
+        SET kyc_status = 'VERIFIED',
+            verified_by = ${staff_id},
+            verified_at = NOW()
+        WHERE kyc_id = ${kyc_id}
+      `;
+    } else if (status === "REJECTED") {
+      if (!reason) {
+        return res
+          .status(400)
+          .json({ status: false, message: "Rejection reason required" });
+      }
+      await sql`
+        UPDATE kyc
+        SET kyc_status = 'REJECTED',
+            rejection_reason = ${reason}
+        WHERE kyc_id = ${kyc_id}
+      `;
+    }
 
-// Reject KYC
-export const rejectKYC = async (req, res) => {
-  try {
-    const { kyc_id } = req.params;
-    const { reason } = req.body;
-
-    await sql`
-      UPDATE kyc
-      SET kyc_status = 'REJECTED',
-          rejection_reason = ${reason}
-      WHERE kyc_id = ${kyc_id}
-    `;
-
-    res.status(200).json({ status: true, message: "KYC rejected" });
-  } catch {
-    res.status(500).json({ status: false, message: "KYC rejection failed" });
+    res
+      .status(200)
+      .json({ status: true, message: `KYC ${status.toLowerCase()} successfully` });
+  } catch (err) {
+    console.error(err);
+    res.status(500).json({ status: false, message: "KYC update failed" });
   }
 };

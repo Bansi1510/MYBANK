@@ -1,5 +1,5 @@
-import React, { useState } from "react";
-import { createKycAPI, type PendingKYC } from "../../services/kyc.api";
+import React, { useEffect, useState } from "react";
+import { createKycAPI, getKYCsAPI, updateKycStatusAPI, type PendingKYC } from "../../services/kyc.api";
 
 
 
@@ -8,10 +8,18 @@ const CreateKYC: React.FC = () => {
   const [panNumber, setPanNumber] = useState("");
   const [aadhaarLast4, setAadhaarLast4] = useState("");
   const [message, setMessage] = useState("");
-  const [pendingKYCs, setPendingKYCs] = useState<PendingKYC[]>([]);
-
+  const [pendingKYCs, setPendingKYCs] = useState<PendingKYC[] | []>([]);
+  useEffect(() => {
+    const fetchData = async () => {
+      const data = await getKYCsAPI();
+      if (!Array.isArray(data)) return;
+      setPendingKYCs(data);
+    };
+    fetchData();
+  }, []);
   // Handle KYC creation (UI only)
   const handleCreateKYC = async (e: React.FormEvent) => {
+
     e.preventDefault();
     if (!accountNumber || !panNumber || !aadhaarLast4) {
       setMessage("All fields are required");
@@ -43,15 +51,33 @@ const CreateKYC: React.FC = () => {
     setAadhaarLast4("");
   };
 
-  const handleApprove = (kyc_id: number) => {
-    alert(`Approved KYC ID: ${kyc_id}`);
+  const handleApprove = async (kyc_id: number) => {
+    const ok = await updateKycStatusAPI(kyc_id, "VERIFIED");
+    if (!ok) return;
+
+    // update UI status only
+    setPendingKYCs((prev) =>
+      prev.map((k) =>
+        k.kyc_id === kyc_id ? { ...k, kyc_status: "VERIFIED" } : k
+      )
+    );
   };
 
-  const handleReject = (kyc_id: number) => {
+  const handleReject = async (kyc_id: number) => {
     const reason = prompt("Enter rejection reason:");
     if (!reason) return;
-    alert(`Rejected KYC ID: ${kyc_id} | Reason: ${reason}`);
+
+    const ok = await updateKycStatusAPI(kyc_id, "REJECTED", reason);
+    if (!ok) return;
+
+    // update UI status only
+    setPendingKYCs((prev) =>
+      prev.map((k) =>
+        k.kyc_id === kyc_id ? { ...k, kyc_status: "REJECTED" } : k
+      )
+    );
   };
+
 
   return (
     <div className="p-6 min-h-screen bg-gray-50">
