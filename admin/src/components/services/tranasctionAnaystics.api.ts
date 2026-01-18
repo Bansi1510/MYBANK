@@ -78,6 +78,7 @@ export interface AnalysisData {
 export const getTransactionAnalysisAPI=async():Promise<AnalysisData|null>=>{
   try {
     const res=await API.get("analysis");
+    console.log(res.data.data);
     if(res.data.status) return res.data.data;
 
     toast.error(res.data.message);
