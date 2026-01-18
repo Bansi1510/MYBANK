@@ -13,6 +13,7 @@ import TransactionRouter from "./routes/transaction.routes.js";
 import LoanRoute from "./routes/loan.routes.js";
 import CardRouter from "./routes/card.route.js";
 import KycRouter from "./routes/kyc.route.js";
+import TransactionAnayticsRouter from "./routes/transactionAnaytics.routes.js";
 
 dotenv.config();
 const PORT = 1510;
@@ -46,7 +47,7 @@ app.use("/api/v1/transactions", TransactionRouter);
 app.use("/api/v1/loan", LoanRoute);
 app.use("/api/v1/card", CardRouter);
 app.use("/api/v1/kyc", KycRouter);
-
+app.use("/api/v1/transaction-anaytics", TransactionAnayticsRouter);
 
 app.listen(PORT, async () => {
   const isConnected = await connectDB();
