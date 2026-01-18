@@ -41,6 +41,8 @@ import LoanDetail from './components/common/LoanDetail'
 import CreateKYC from './components/staff/kyc-verification/CreateKYC'
 import AllKYCList from './components/staff/kyc-verification/AllKYCList'
 import Transactions from './components/admin/Transactions'
+import AllTransactions from './components/admin/Transactions/AllTransactions'
+import AdminTransactionAnalysis from './components/admin/Transactions/AdminTransactionAnalysis'
 
 
 
@@ -61,14 +63,10 @@ const appRouter = createBrowserRouter([
 
           { path: "new-requests", element: <AdminNewAccountRequests /> },
           { path: "acc-req-history", element: <NewAccountRequestHistory /> },
-          // { path: "loan-requests", element: <LoanRequests /> },
-          // { path: "transactions", element: <AccountsTransactionHistory /> },
+
           { path: ":status", element: <AccountStatusView /> },
           { path: ":status/:accountId", element: <AccountDetails /> },
-          // { path: "reports", element: <AccountReports /> },
-          // { path: "alerts", element: <AccountAlerts /> },
 
-          // { path: "settings", element: <AccountSettings /> },
         ],
       },
 
@@ -102,7 +100,11 @@ const appRouter = createBrowserRouter([
       },
       {
         path: "transactions",
-        element: <Transactions />
+        element: <Transactions />,
+        children: [
+          { path: "all-transactions", element: <AllTransactions /> },
+          { path: "transactions-anaysis", element: <AdminTransactionAnalysis /> }
+        ]
       }
     ],
   },

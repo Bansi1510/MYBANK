@@ -12,20 +12,11 @@ const Transactions: React.FC = () => {
       link: "all-transactions",
     },
     {
-      label: "Staff Transactions",
-      desc: "Transactions performed by staff",
-      link: "staff-transactions",
+      label: "Transactions anaysis",
+      desc: "Transactions anaysis ",
+      link: "transactions-anaysis",
     },
-    {
-      label: "Cash Deposit",
-      desc: "Deposit cash into customer account",
-      link: "cash-deposit",
-    },
-    {
-      label: "Cash Withdrawal",
-      desc: "Withdraw cash from customer account",
-      link: "cash-withdrawal",
-    },
+
   ];
 
   return (
