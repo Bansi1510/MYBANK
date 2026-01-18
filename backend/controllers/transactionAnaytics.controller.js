@@ -13,11 +13,10 @@ export const getAllTransactions = async (req, res) => {
       FROM transactions
       ORDER BY created_at DESC
     `;
-
-    res.status(200).json({ success: true, data: result });
+    res.status(200).json({ status: true, data: result });
   } catch (err) {
     console.error(err);
-    res.status(500).json({ success: false, message: "Failed to fetch transactions" });
+    res.status(500).json({ status: false, message: "Failed to fetch transactions" });
   }
 };
 export const getTransactionAnalysis = async (req, res) => {
@@ -54,7 +53,7 @@ export const getTransactionAnalysis = async (req, res) => {
     `;
 
     res.status(200).json({
-      success: true,
+      status: true,
       data: {
         daily: {
           labels: daily.map(r => r.date),
@@ -76,6 +75,6 @@ export const getTransactionAnalysis = async (req, res) => {
     });
   } catch (err) {
     console.error(err);
-    res.status(500).json({ success: false, message: "Failed to fetch transaction analysis" });
+    res.status(500).json({ status: false, message: "Failed to fetch transaction analysis" });
   }
 };

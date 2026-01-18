@@ -25,82 +25,11 @@ ChartJS.register(
   ArcElement
 );
 
-interface Summary {
-  total_transactions: number;
-  total_amount: number;
-  total_deposit: number;
-  total_withdraw: number;
-}
-
-interface MonthlyData {
-  labels: string[];
-  datasets: {
-    label: string;
-    data: number[];
-    backgroundColor: string;
-  }[];
-}
-
-interface DailyData {
-  labels: string[];
-  datasets: {
-    label: string;
-    data: number[];
-    borderColor: string;
-    backgroundColor: string;
-  }[];
-}
-
-interface AnalysisData {
-  daily: DailyData;
-  monthly: MonthlyData;
-  typeDistribution: {
-    labels: string[];
-    datasets: {
-      label: string;
-      data: number[];
-      backgroundColor: string[];
-    }[];
-  };
-  summary: Summary;
-}
-
 const AdminTransactionAnalysis: React.FC = () => {
   const [data, setData] = useState<AnalysisData | null>(null);
 
   useEffect(() => {
-    // Dummy Data
-    const dummyData: AnalysisData = {
-      daily: {
-        labels: ["2026-01-15", "2026-01-16", "2026-01-17", "2026-01-18"],
-        datasets: [{ label: "Transactions", data: [5, 8, 3, 7], borderColor: "#3B82F6", backgroundColor: "#3B82F6" }],
-      },
-      monthly: {
-        labels: ["2026-01", "2026-02", "2026-03"],
-        datasets: [
-          { label: "Credit", data: [15000, 12000, 18000], backgroundColor: "#10B981" },
-          { label: "Debit", data: [7000, 5000, 9000], backgroundColor: "#EF4444" },
-        ],
-      },
-      typeDistribution: {
-        labels: ["TRANSFER", "DEPOSIT", "WITHDRAW"],
-        datasets: [
-          {
-            label: "Transactions",
-            data: [8, 10, 5],
-            backgroundColor: ["#3B82F6", "#10B981", "#EF4444"],
-          },
-        ],
-      },
-      summary: {
-        total_transactions: 23,
-        total_amount: 37000,
-        total_deposit: 12000,
-        total_withdraw: 5000,
-      },
-    };
 
-    setData(dummyData);
   }, []);
 
   if (!data) return <p className="text-center text-gray-500 mt-10">Loading dashboard...</p>;
