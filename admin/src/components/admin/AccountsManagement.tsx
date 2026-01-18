@@ -10,6 +10,7 @@ const AccountsManagement: React.FC = () => {
     { title: "New Account Requests History", desc: "View approved and rejected  new account req", link: "acc-req-history" },
     { title: "Active Accounts", desc: "Manage all active accounts", link: "active" },
     { title: "Closed Accounts", desc: "View closed accounts", link: "inactive" },
+    { title: "Full User Details", desc: "view full user detils", link: "user-details" }
   ];
 
   return (

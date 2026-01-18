@@ -43,6 +43,7 @@ import AllKYCList from './components/staff/kyc-verification/AllKYCList'
 import Transactions from './components/admin/Transactions'
 import AllTransactions from './components/admin/Transactions/AllTransactions'
 import AdminTransactionAnalysis from './components/admin/Transactions/AdminTransactionAnalysis'
+import UserFullProfile from './components/common/UserFullProfile'
 
 
 
@@ -63,7 +64,7 @@ const appRouter = createBrowserRouter([
 
           { path: "new-requests", element: <AdminNewAccountRequests /> },
           { path: "acc-req-history", element: <NewAccountRequestHistory /> },
-
+          { path: "user-details", element: <UserFullProfile /> },
           { path: ":status", element: <AccountStatusView /> },
           { path: ":status/:accountId", element: <AccountDetails /> },
 
