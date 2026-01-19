@@ -52,6 +52,79 @@ export interface AccountDetails {
   user_created_at: string;
 }
 
+export interface PersonalDetails {
+  user_id: number;
+  name: string;
+  email: string;
+  mobile_number: string;
+  address: string;
+  joined_on: string;
+}
+
+export interface AccountInfo {
+  account_id: number;
+  account_number: string;
+  account_type: string;
+  balance: number;
+  status: string;
+}
+
+export interface Kyc {
+  kyc_id: number;
+  status: string;
+  submitted_on: string;
+}
+export interface KycDocument {
+  id: number;
+  document_type: string;
+  document_number: string;
+}
+
+export interface Loan {
+  id: number;
+  loan_type: string;
+  amount: number;
+}
+
+export interface LoanPayment {
+  id: number;
+  loan_id: number;
+  amount: number;
+  paid_on: string;
+}
+
+export interface Card {
+  id: number;
+  card_type: string;
+  card_number: string;
+}
+
+// export interface CardPayment {
+//   id: number;
+//   amount: number;
+//   paid_on: string;
+// }
+
+export interface Transaction {
+  id: number;
+  from_account: string;
+  to_account: string;
+  amount: number;
+  transaction_type: string;
+  created_at: string;
+}
+
+export interface UserProfile {
+  personal_details: PersonalDetails;
+  account: AccountInfo;
+  kyc: Kyc | null;
+  kyc_documents: KycDocument[];
+  loans: Loan[];
+  loan_payments: LoanPayment[];
+  cards: Card[];
+  // card_payments: CardPayment[];
+  transactions: Transaction[];
+}
 
 export const changeAccountStatusAPI = async (req_no: number,action:string): Promise<boolean> => {
   try {
@@ -142,5 +215,18 @@ export const updateAccountStatus=async(accountNumber:string,status:string):Promi
     const msg = axiosErr.response?.data?.message || "can not update";
     toast.error(msg);
     return  false;
+  }
+}
+export const getFullUserProfile=async(account_number:string):Promise<UserProfile|null>=>{
+  try {
+  const res=await API.get("user/all-details",{params:{account_number}});
+  if(res.data.status) return res.data.data;
+  toast.error(res.data.message);
+  return null;
+  }catch (error: unknown) {
+    const axiosErr = error as AxiosError<{ message?: string }>;
+    const msg = axiosErr.response?.data?.message || "Login Error";
+    toast.error(msg);
+    return null;
   }
 }
