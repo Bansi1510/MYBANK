@@ -1,81 +1,5 @@
 import React, { useState } from "react";
-
-/* ================= TYPES ================= */
-
-interface PersonalDetails {
-  user_id: number;
-  name: string;
-  email: string;
-  mobile_number: string;
-  address: string;
-  joined_on: string;
-}
-
-interface Account {
-  account_id: number;
-  account_number: string;
-  account_type: string;
-  balance: number;
-  status: string;
-}
-
-interface Kyc {
-  kyc_id: number;
-  status: string;
-  submitted_on: string;
-}
-
-interface KycDocument {
-  id: number;
-  document_type: string;
-  document_number: string;
-}
-
-interface Loan {
-  id: number;
-  loan_type: string;
-  amount: number;
-}
-
-interface LoanPayment {
-  id: number;
-  loan_id: number;
-  amount: number;
-  paid_on: string;
-}
-
-interface Card {
-  id: number;
-  card_type: string;
-  card_number: string;
-}
-
-interface CardPayment {
-  id: number;
-  amount: number;
-  paid_on: string;
-}
-
-interface Transaction {
-  id: number;
-  from_account: string;
-  to_account: string;
-  amount: number;
-  transaction_type: string;
-  created_at: string;
-}
-
-interface UserProfile {
-  personal_details: PersonalDetails;
-  account: Account;
-  kyc: Kyc | null;
-  kyc_documents: KycDocument[];
-  loans: Loan[];
-  loan_payments: LoanPayment[];
-  cards: Card[];
-  card_payments: CardPayment[];
-  transactions: Transaction[];
-}
+import { getFullUserProfile, type UserProfile } from "../services/adminAccount.api";
 
 /* ================= COMPONENT ================= */
 
@@ -83,62 +7,12 @@ const UserFullProfile: React.FC = () => {
   const [accountNumber, setAccountNumber] = useState<string>("");
   const [profile, setProfile] = useState<UserProfile | null>(null);
 
-  const dummyData: UserProfile = {
-    personal_details: {
-      user_id: 1,
-      name: "Rahul Sharma",
-      email: "rahul@gmail.com",
-      mobile_number: "9876543210",
-      address: "Ahmedabad, Gujarat",
-      joined_on: "2024-01-10",
-    },
-    account: {
-      account_id: 101,
-      account_number: "1234567890",
-      account_type: "Savings",
-      balance: 52000,
-      status: "active",
-    },
-    kyc: {
-      kyc_id: 1,
-      status: "verified",
-      submitted_on: "2024-01-12",
-    },
-    kyc_documents: [
-      { id: 1, document_type: "Aadhar", document_number: "XXXX-1234" },
-      { id: 2, document_type: "PAN", document_number: "ABCDE1234F" },
-    ],
-    loans: [{ id: 1, loan_type: "Home Loan", amount: 500000 }],
-    loan_payments: [
-      { id: 1, loan_id: 1, amount: 15000, paid_on: "2024-02-01" },
-    ],
-    cards: [
-      { id: 1, card_type: "Debit Card", card_number: "**** **** **** 4321" },
-    ],
-    card_payments: [{ id: 1, amount: 2000, paid_on: "2024-02-15" }],
-    transactions: [
-      {
-        id: 1,
-        from_account: "1234567890",
-        to_account: "9876543210",
-        amount: 5000,
-        transaction_type: "Debit",
-        created_at: "2024-03-01",
-      },
-      {
-        id: 2,
-        from_account: "9999999999",
-        to_account: "1234567890",
-        amount: 8000,
-        transaction_type: "Credit",
-        created_at: "2024-03-05",
-      },
-    ],
-  };
-
-  const handleGetDetails = (): void => {
+  const handleGetDetails = async () => {
     if (!accountNumber.trim()) return;
-    setProfile(dummyData);
+    const data = await getFullUserProfile(accountNumber);
+    if (!data) return;
+    console.log(data);
+    setProfile(data)
   };
 
   return (

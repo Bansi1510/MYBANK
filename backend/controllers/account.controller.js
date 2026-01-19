@@ -205,7 +205,7 @@ export const chnageAccountStatus = async (req, res) => {
 };
 export const getFullUserProfile = async (req, res) => {
   try {
-    const { account_number } = req.params;
+    const { account_number } = req.query;
 
     if (!account_number) {
       return res.status(400).json({
@@ -219,17 +219,17 @@ export const getFullUserProfile = async (req, res) => {
       SELECT 
         u.id,
         u.name,
-         u.email,
+        u.email,
         u.mobile_number,
         u.address,
         u.created_at,
-        a.account_id,
+        a.id,
         a.account_number,
         a.account_type,
         a.balance,
         a.status AS account_status
       FROM users u
-      JOIN accounts a ON a.user_id = u.user_id
+      JOIN accounts a ON a.user_id = u.id
       WHERE a.account_number = ${account_number}
     `;
 
@@ -279,12 +279,12 @@ export const getFullUserProfile = async (req, res) => {
       WHERE customer_id = ${user_id}
     `;
 
-    const cardPayments = await sql`
-      SELECT cp.*
-      FROM card_transactions cp
-      JOIN cards c ON c.id = cp.card_id
-      WHERE c.customer_id = ${user_id}
-    `;
+    // const cardPayments = await sql`
+    //   SELECT cp.*
+    //   FROM card_transactions cp
+    //   JOIN cards c ON c.id = cp.card_id
+    //   WHERE c.customer_id = ${user_id}
+    // `;
 
     /* ---------------- TRANSACTIONS ---------------- */
     const transactions = await sql`
@@ -301,7 +301,7 @@ export const getFullUserProfile = async (req, res) => {
       data: {
         personal_details: {
           user_id: user.user_id,
-          name: `${user.first_name} ${user.last_name}`,
+          name: user.name,
           email: user.email,
           mobile_number: user.mobile_number,
           address: user.address,
@@ -319,7 +319,7 @@ export const getFullUserProfile = async (req, res) => {
         loans,
         loan_payments: loanPayments,
         cards,
-        card_payments: cardPayments,
+        // card_payments: cardPayments,
         transactions,
       },
     });

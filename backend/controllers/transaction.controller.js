@@ -410,8 +410,8 @@ export const cashTransactionByStaff = async (req, res) => {
         ${transaction_type},
         ${txnAmount},
         'INR',
-        ${transaction_type === "withdraw" ? account_number : null},
-        ${transaction_type === "deposit" ? account_number : null},
+        ${transaction_type === "withdraw" ? account_number : bank},
+        ${transaction_type === "deposit" ? account_number : bank},
         ${description},
         'success',
         ${staffId}
