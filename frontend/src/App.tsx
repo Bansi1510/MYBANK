@@ -1,5 +1,6 @@
 import { createBrowserRouter, RouterProvider } from "react-router-dom";
 import './App.css'
+import AuthProvider from "./components/contex/AuthContext";
 import "react-toastify/dist/ReactToastify.css";
 import Home from "./components/pages/Home";
 import Login from "./components/auth/Login";
@@ -131,7 +132,9 @@ function App() {
 
   return (
     <>
-      <RouterProvider router={appRouter}></RouterProvider>
+      <AuthProvider>
+        <RouterProvider router={appRouter}></RouterProvider>
+      </AuthProvider>
     </>
   );
 }
