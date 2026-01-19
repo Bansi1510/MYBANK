@@ -9,8 +9,6 @@ import {
   logout,
   addAdmin,
 } from "../controllers/auth.controller.js";
-import { isAuthenticated } from "../middleware/isAutheticated.js";
-import { isAdminOrStaff } from "../middleware/isAdminOrStaff.js";
 
 const AuthRouter = express.Router();
 

@@ -337,7 +337,9 @@ export const logout = async (req, res) => {
 };
 export const refreshToken = async (req, res) => {
   try {
-    const cookieToken = req.cookies && (req.cookies.refresh_token || req.cookies.refreshToken || req.cookies.refresh_token);
+    console.log("hello");
+    console.log(req.cookies.refresh_token);
+    const cookieToken = req.cookies.refresh_token || req.cookies.refreshToken || req.cookies.refresh_token;
     const bodyToken = req.body && req.body.token;
     const token = cookieToken || bodyToken;
 
@@ -349,7 +351,7 @@ export const refreshToken = async (req, res) => {
     } catch (err) {
       return res.status(403).json({ status: false, message: "Invalid refresh token" });
     }
-
+    console.log(decoded);
     const accessToken = generateAccessToken({ id: decoded.id, role: decoded.role });
 
     // Optionally set cookie for new access token
