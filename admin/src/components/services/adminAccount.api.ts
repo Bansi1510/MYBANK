@@ -1,6 +1,6 @@
 import axios, { AxiosError } from "axios";
 import { toast } from "react-toastify";
- 
+
 
 const API = axios.create({
   baseURL: "http://localhost:1510/api/v1/account/",
@@ -36,8 +36,8 @@ export interface AccountDetails {
   account_id: number;
   account_number: string;
   account_type: string
-  balance: string; 
-  status:string;
+  balance: string;
+  status: string;
   account_created_at: string;
   user_id: number;
   name: string;
@@ -99,11 +99,7 @@ export interface Card {
   card_number: string;
 }
 
-// export interface CardPayment {
-//   id: number;
-//   amount: number;
-//   paid_on: string;
-// }
+
 
 export interface Transaction {
   id: number;
@@ -122,13 +118,12 @@ export interface UserProfile {
   loans: Loan[];
   loan_payments: LoanPayment[];
   cards: Card[];
-  // card_payments: CardPayment[];
   transactions: Transaction[];
 }
 
-export const changeAccountStatusAPI = async (req_no: number,action:string): Promise<boolean> => {
+export const changeAccountStatusAPI = async (req_no: number, action: string): Promise<boolean> => {
   try {
-    const res = await API.put(`change-status/${req_no}`,{action});
+    const res = await API.put(`change-status/${req_no}`, { action });
 
     if (res.data.status) {
       toast.success(res.data.message);
@@ -145,14 +140,14 @@ export const changeAccountStatusAPI = async (req_no: number,action:string): Prom
   }
 }
 
-export const newAccHisAPI=async():Promise<AccountHistory[]|[]>=>{
+export const newAccHisAPI = async (): Promise<AccountHistory[] | []> => {
   try {
-    const res=await API.get("new-acc-req-his");
+    const res = await API.get("new-acc-req-his");
 
-    if(res.data.status){
+    if (res.data.status) {
       toast.success(res.data.message);
       return res.data.data;
-    }else{
+    } else {
       toast.error(res.data.message);
       return [];
     }
@@ -164,15 +159,15 @@ export const newAccHisAPI=async():Promise<AccountHistory[]|[]>=>{
   }
 }
 
-export const getAccByStatus=async(status?:string):Promise<Account[]|[]>=>{
+export const getAccByStatus = async (status?: string): Promise<Account[] | []> => {
   try {
-       const url = status ? `all-acc?status=${status}` : `all-acc`;
+    const url = status ? `all-acc?status=${status}` : `all-acc`;
 
-    const res=await API.get(url)
-    if(res.data.status){
+    const res = await API.get(url)
+    if (res.data.status) {
       toast.success(res.data.message);
       return res.data.data;
-    }else{
+    } else {
       toast.error(res.data.message);
       return [];
     }
@@ -184,46 +179,46 @@ export const getAccByStatus=async(status?:string):Promise<Account[]|[]>=>{
   }
 }
 
-export const getUserByAccNumber=async(accNumber:string):Promise<AccountDetails|null>=>{
-    try {
-      const res= await API.get(`${accNumber}`);
+export const getUserByAccNumber = async (accNumber: string): Promise<AccountDetails | null> => {
+  try {
+    const res = await API.get(`${accNumber}`);
 
-      if(res.data.status){
-        return res.data.data;
-      }else{
-        return null;
-      }
-    } catch (error) {
-          const axiosErr = error as AxiosError<{ message?: string }>;
+    if (res.data.status) {
+      return res.data.data;
+    } else {
+      return null;
+    }
+  } catch (error) {
+    const axiosErr = error as AxiosError<{ message?: string }>;
     const msg = axiosErr.response?.data?.message || "Fetch Account Error";
     toast.error(msg);
     return null;
-    }
-}
-
-export const updateAccountStatus=async(accountNumber:string,status:string):Promise<boolean>=>{
-  try { 
-      const res=await API.put(`${accountNumber}/status-update`,{status});
-      if(res.data.status){
-        return true;
-      }else{
-        toast.error(res.data.message);
-        return false;
-      }
-  } catch (error) {
-     const axiosErr = error as AxiosError<{ message?: string }>;
-    const msg = axiosErr.response?.data?.message || "can not update";
-    toast.error(msg);
-    return  false;
   }
 }
-export const getFullUserProfile=async(account_number:string):Promise<UserProfile|null>=>{
+
+export const updateAccountStatus = async (accountNumber: string, status: string): Promise<boolean> => {
   try {
-  const res=await API.get("user/all-details",{params:{account_number}});
-  if(res.data.status) return res.data.data;
-  toast.error(res.data.message);
-  return null;
-  }catch (error: unknown) {
+    const res = await API.put(`${accountNumber}/status-update`, { status });
+    if (res.data.status) {
+      return true;
+    } else {
+      toast.error(res.data.message);
+      return false;
+    }
+  } catch (error) {
+    const axiosErr = error as AxiosError<{ message?: string }>;
+    const msg = axiosErr.response?.data?.message || "can not update";
+    toast.error(msg);
+    return false;
+  }
+}
+export const getFullUserProfile = async (account_number: string): Promise<UserProfile | null> => {
+  try {
+    const res = await API.get("user/all-details", { params: { account_number } });
+    if (res.data.status) return res.data.data;
+    toast.error(res.data.message);
+    return null;
+  } catch (error: unknown) {
     const axiosErr = error as AxiosError<{ message?: string }>;
     const msg = axiosErr.response?.data?.message || "Login Error";
     toast.error(msg);

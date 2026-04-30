@@ -1,58 +1,35 @@
 import makeWASocket, {
-  useMultiFileAuthState,
-  makeCacheableSignalKeyStore,
-  DisconnectReason,
+  fetchLatestBaileysVersion,
+  useMultiFileAuthState
 } from "@whiskeysockets/baileys";
 import qrcode from "qrcode-terminal";
-import P from "pino";
 
 let sock;
 
-export function formatNumber(num) {
-  num = num.replace(/\D/g, "");
-  return num + "@s.whatsapp.net";
-}
-
-
-export async function initWhatsapp() {
-  const { state, saveCreds } = await useMultiFileAuthState("whatsapp-session");
+export async function start() {
+  const { state, saveCreds } = await useMultiFileAuthState("session");
+  const { version } = await fetchLatestBaileysVersion();
 
   sock = makeWASocket({
-    auth: {
-      creds: state.creds,
-      keys: makeCacheableSignalKeyStore(state.keys, P().child({ level: "fatal" })),
-    },
-    logger: P({ level: "fatal" }),
+    auth: state,
+    version,
     printQRInTerminal: false,
+
   });
 
-  global.client = sock;
+  sock.ev.on("connection.update", (update) => {
+    console.log("UPDATE:", update);
 
-  sock.ev.on("connection.update", ({ connection, qr, lastDisconnect }) => {
-    if (qr) {
-      qrcode.generate(qr, { small: true });
+    if (update.qr) {
+      console.log("📱 Scan QR:");
+      qrcode.generate(update.qr, {
+        small: true,
+        margin: 1
+      });
     }
 
-    if (connection === "open") {
-      console.log("WhatsApp Connected 🎉");
-    }
-
-    if (connection === "close") {
-      const wasLoggedOut =
-        lastDisconnect?.error?.output?.statusCode === DisconnectReason.loggedOut;
-
-      if (wasLoggedOut) {
-        console.log("WhatsApp logged out — remove session and re-authenticate");
-        return;
-      }
-
-      console.log("WhatsApp Disconnected ❌ Reconnecting…");
-
-      try {
-        if (sock && typeof sock.end === "function") sock.end();
-      } catch (err) { }
-
-      setTimeout(() => initWhatsapp(), 3000);
+    if (update.connection === "open") {
+      console.log("✅ WhatsApp Connected");
     }
   });
 
@@ -60,6 +37,11 @@ export async function initWhatsapp() {
 }
 
 export function getSocket() {
-  if (!sock) throw new Error("WhatsApp socket not initialized");
+  if (!sock) throw new Error("WhatsApp not connected yet");
   return sock;
+}
+
+
+export function formatNumber(num) {
+  return num.replace(/\D/g, "") + "@s.whatsapp.net";
 }
