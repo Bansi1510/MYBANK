@@ -1,5 +1,3 @@
-// loanDocuments.config.ts
-
 export const COMMON_DOCUMENTS = [
   { key: "aadhaar", label: "Aadhaar Card" },
   { key: "pan", label: "PAN Card" },
