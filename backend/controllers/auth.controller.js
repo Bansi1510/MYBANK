@@ -285,21 +285,21 @@ export const verifyOTP = async (req, res) => {
     // 4. Generate tokens
     const accessToken = generateAccessToken({ id: user[0].id, role: "user" });
     const refreshToken = generateRefreshToken({ id: user[0].id, role: "user" });
-
+    console.log(accessToken)
     res.cookie("access_token", accessToken, {
       httpOnly: false,
-      secure: true,
-      sameSite: "none",
+      secure: false,
+      sameSite: "lax",
       maxAge: 7 * 24 * 60 * 60 * 1000,
-      path: "/"
+      path: "/",
     });
 
     res.cookie("refresh_token", refreshToken, {
       httpOnly: true,
-      secure: true,
-      sameSite: "none",
+      secure: false,
+      sameSite: "lax",
       maxAge: 7 * 24 * 60 * 60 * 1000,
-      path: "/"
+      path: "/",
     });
 
     // 5. Safe response

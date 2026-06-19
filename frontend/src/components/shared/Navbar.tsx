@@ -13,7 +13,6 @@ const Navbar: React.FC = () => {
     const res = await LogoutAPI();
     if (res) {
       dispatch(clearAuth());
-
     }
   };
 
