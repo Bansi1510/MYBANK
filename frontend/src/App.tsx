@@ -1,6 +1,5 @@
 import { createBrowserRouter, RouterProvider } from "react-router-dom";
 import './App.css'
-import AuthProvider from "./components/contex/AuthContext";
 import "react-toastify/dist/ReactToastify.css";
 import Home from "./components/pages/Home";
 import Login from "./components/auth/Login";
@@ -25,6 +24,7 @@ import LoanPaymentForm from "./components/services_page/loan/LoanPaymentForm";
 import Cards from "./components/pages/Cards";
 import CardRequestForm from "./components/cards/CardRequestForm";
 import MyTransactionHistory from "./components/auth/MyTransactionHistory";
+import ProtectedRoute from "./components/contex/ProtectedRoute";
 
 const appRouter = createBrowserRouter([
   {
@@ -36,93 +36,99 @@ const appRouter = createBrowserRouter([
     element: <Login />
   },
   {
-    path: "/profile",
-    element: <Profile />
-  },
-  {
-    path: "/my-transaction-history",
-    element: <MyTransactionHistory />
-  },
-  {
-    path: "/accounts",
-    element: <Accounts />
-  },
-  {
-    path: "/services",
-    element: <Services />
-  },
-  {
-    path: "/transaction/:type",
-    element: <TransactionScreen />
-  },
-  {
-    path: "/contact",
-    element: <Contant />
-  },
-  {
-    path: "/loans",
-    element: <Loans />
+    element: <ProtectedRoute />,
+    children: [
+      {
+        path: "/profile",
+        element: <Profile />
+      },
+      {
+        path: "/my-transaction-history",
+        element: <MyTransactionHistory />
+      },
+      {
+        path: "/accounts",
+        element: <Accounts />
+      },
+      {
+        path: "/services",
+        element: <Services />
+      },
+      {
+        path: "/transaction/:type",
+        element: <TransactionScreen />
+      },
+      {
+        path: "/contact",
+        element: <Contant />
+      },
+      {
+        path: "/loans",
+        element: <Loans />
+      },
+
+      //services
+
+      {
+        path: "/services/upi",
+        element: <UPIService />
+      },
+      {
+        path: "/services/upi/mobile",
+        element: <MobileUPI />
+      },
+      {
+        path: "/services/upi/account",
+        element: <AccountUPI />
+      },
+      {
+        path: "/upi-success",
+        element: <UpiSuccess />
+      },
+      {
+        path: "/services/banking",
+        element: <BankingService />
+      },
+      {
+        path: "/services/banking/balance",
+        element: <CheckBalance />
+      },
+      {
+        path: "/services/banking/transfer",
+        element: <MoneyTransfer />
+      },
+      {
+        path: "/services/utility/electricity",
+        element: <ElectricityBill />
+      },
+      {
+        path: "/services/utility/mobile-recharge",
+        element: <MobileRecharge />
+      },
+      {
+        path: "/services/loan/emi",
+        element: <LoanPaymentForm />
+      },
+      {
+        path: "/services/utility/insurance",
+        element: <InsurancePremium />
+      },
+      //loan
+      {
+        path: "/loan/:loanType",
+        element: <LoanApplicationPage />
+      },
+      {
+        path: "/cards",
+        element: <Cards />
+      },
+      {
+        path: "/cards/new-request",
+        element: <CardRequestForm />
+      }
+    ]
   },
 
-  //services
-
-  {
-    path: "/services/upi",
-    element: <UPIService />
-  },
-  {
-    path: "/services/upi/mobile",
-    element: <MobileUPI />
-  },
-  {
-    path: "/services/upi/account",
-    element: <AccountUPI />
-  },
-  {
-    path: "/upi-success",
-    element: <UpiSuccess />
-  },
-  {
-    path: "/services/banking",
-    element: <BankingService />
-  },
-  {
-    path: "/services/banking/balance",
-    element: <CheckBalance />
-  },
-  {
-    path: "/services/banking/transfer",
-    element: <MoneyTransfer />
-  },
-  {
-    path: "/services/utility/electricity",
-    element: <ElectricityBill />
-  },
-  {
-    path: "/services/utility/mobile-recharge",
-    element: <MobileRecharge />
-  },
-  {
-    path: "/services/loan/emi",
-    element: <LoanPaymentForm />
-  },
-  {
-    path: "/services/utility/insurance",
-    element: <InsurancePremium />
-  },
-  //loan
-  {
-    path: "/loan/:loanType",
-    element: <LoanApplicationPage />
-  },
-  {
-    path: "/cards",
-    element: <Cards />
-  },
-  {
-    path: "/cards/new-request",
-    element: <CardRequestForm />
-  }
 
 
 ]);
@@ -132,9 +138,8 @@ function App() {
 
   return (
     <>
-      <AuthProvider>
-        <RouterProvider router={appRouter}></RouterProvider>
-      </AuthProvider>
+
+      <RouterProvider router={appRouter}></RouterProvider>
     </>
   );
 }

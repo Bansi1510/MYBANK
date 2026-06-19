@@ -1,42 +1,20 @@
-import { createContext, useEffect, useState } from "react";
-import api from "../services/axios.service";
+import { createContext } from "react";
+
+export interface User {
+  id: string;
+  name?: string;
+  email?: string;
+  role?: string;
+}
 
 interface AuthContextType {
-  user: null;
+  user: User | null;
+  setUser: React.Dispatch<React.SetStateAction<User | null>>;
+  loading: boolean;
 }
 
-const AuthContext = createContext<AuthContextType | undefined>(undefined);
-
-interface AuthProviderProps {
-  children: ReactNode;
-}
-
-const AuthProvider = ({ children }: AuthProviderProps) => {
-  const [user, setUser] = useState(null);
-  const [loading, setLoading] = useState(true);
-
-  useEffect(() => {
-    const restoreSession = async () => {
-      try {
-        const res = await api.post("/refresh-token");
-        api.defaults.headers.Authorization =
-          `Bearer ${res.data.accessToken}`;
-      } catch (err) {
-        console.log(err);
-        console.log("User not logged in");
-      } finally {
-        setLoading(false);
-      }
-    };
-
-    restoreSession();
-  }, []);
-
-  return (
-    <AuthContext.Provider value={{ user }}>
-      {!loading && children}
-    </AuthContext.Provider>
-  );
-};
-
-export default AuthProvider;
+export const AuthContext = createContext<AuthContextType>({
+  user: null,
+  setUser: () => { },
+  loading: true,
+});

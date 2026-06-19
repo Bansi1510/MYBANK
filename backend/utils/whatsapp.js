@@ -1,7 +1,9 @@
 import makeWASocket, {
   fetchLatestBaileysVersion,
-  useMultiFileAuthState
+  useMultiFileAuthState,
+  DisconnectReason
 } from "@whiskeysockets/baileys";
+
 import qrcode from "qrcode-terminal";
 
 let sock;
@@ -13,28 +15,38 @@ export async function start() {
   sock = makeWASocket({
     auth: state,
     version,
-    printQRInTerminal: false,
-
-  });
-
-  sock.ev.on("connection.update", (update) => {
-    console.log("UPDATE:", update);
-
-    if (update.qr) {
-      console.log("📱 Scan QR:");
-      qrcode.generate(update.qr, {
-        small: true,
-        margin: 1
-      });
-    }
-
-    if (update.connection === "open") {
-      console.log("✅ WhatsApp Connected");
-    }
+    printQRInTerminal: true, // IMPORTANT
   });
 
   sock.ev.on("creds.update", saveCreds);
+
+  sock.ev.on("connection.update", async (update) => {
+    const { connection, lastDisconnect, qr } = update;
+
+    if (qr) {
+      console.log("📱 Scan QR:");
+      qrcode.generate(qr, { small: true });
+    }
+
+    if (connection === "open") {
+      console.log("✅ WhatsApp Connected");
+    }
+
+    if (connection === "close") {
+      const statusCode = lastDisconnect?.error?.output?.statusCode;
+
+      console.log("❌ Connection closed:", statusCode);
+
+      // IMPORTANT SAFE RECONNECT
+      if (statusCode !== DisconnectReason.loggedOut) {
+        console.log("♻️ Restarting WhatsApp...");
+        setTimeout(() => start(), 5000);
+      }
+    }
+  });
 }
+
+
 
 export function getSocket() {
   if (!sock) throw new Error("WhatsApp not connected yet");

@@ -22,7 +22,7 @@ export const getUserProfile = async (req, res) => {
       LEFT JOIN accounts a ON a.user_id = u.id
       WHERE u.id = ${userId}
     `;
-
+    console.log("data", result)
     if (!result || result.length === 0) {
       return res.status(404).json({ status: false, message: "User not found" });
     }
